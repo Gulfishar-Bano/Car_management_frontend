@@ -1,0 +1,77 @@
+.booking-container {
+  max-width: 500px;
+  margin: 40px auto;
+  padding: 30px;
+  background-color: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.booking-container h2 {
+  text-align: center;
+  margin-bottom: 20px;
+  color: #333;
+}
+
+.ride-info {
+  background-color: #f9f9f9;
+  padding: 15px;
+  border-radius: 8px;
+  margin-bottom: 25px;
+  border: 1px solid #e0e0e0;
+}
+
+.ride-info p {
+  margin: 6px 0;
+  font-weight: 500;
+}
+
+.booking-container h3 {
+  margin-bottom: 15px;
+  color: #555;
+}
+
+.booking-container input {
+  width: 100%;
+  padding: 10px 12px;
+  margin-bottom: 15px;
+  border-radius: 8px;
+  border: 1px solid #ccc;
+  font-size: 14px;
+  transition: border-color 0.2s;
+}
+
+.booking-container input:focus {
+  outline: none;
+  border-color: #007bff;
+}
+
+.booking-container button {
+  width: 100%;
+  padding: 12px;
+  background-color: #007bff;
+  color: white;
+  font-weight: bold;
+  font-size: 16px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.booking-container button:hover {
+  background-color: #0056b3;
+}
+
+.booking-container button:disabled {
+  background-color: #999;
+  cursor: not-allowed;
+}
+
+.error-text {
+  text-align: center;
+  margin-top: 10px;
+  color: red;
+  font-weight: 500;
+}
