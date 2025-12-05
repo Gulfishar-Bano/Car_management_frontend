@@ -82,7 +82,7 @@ const Booking = () => {
 
     } catch (err) {
       console.error("Booking error:", err);
-      // Attempt to show error message from the backend if available
+     
       setError(err.response?.data?.message || "Could not complete booking. Please try again.");
     } finally {
       setLoading(false);
@@ -102,7 +102,7 @@ const Booking = () => {
       </div>
 
       <div className="booking-form">
-        {/* Name Input */}
+      
         <input
           type="text"
           name="Name"
@@ -111,7 +111,7 @@ const Booking = () => {
           onChange={handleChange}
         />
 
-        {/* Email Input */}
+       
         <input
           type="email"
           name="Email"
@@ -120,7 +120,7 @@ const Booking = () => {
           onChange={handleChange}
         />
 
-        {/* Date/Time Input */}
+      
         <input
           type="datetime-local"
           name="Date"

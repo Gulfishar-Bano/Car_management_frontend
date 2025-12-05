@@ -7,7 +7,7 @@ const Footer = () => {
     <footer className="site-footer">
       <div className="footer-inner">
         <div className="footer-col">
-          <h4>Gulfishar Cars</h4>
+          <h4>Carisma</h4>
           <p>Reliable car rentals & trusted drivers. Book with confidence.</p>
         </div>
 
@@ -26,7 +26,7 @@ const Footer = () => {
       </div>
 
       <div className="footer-bottom">
-        <small>© {new Date().getFullYear()} Gulfishar Cars — All rights reserved</small>
+        <small>© {new Date().getFullYear()} Carisma — All rights reserved</small>
       </div>
     </footer>
   );
