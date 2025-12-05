@@ -17,7 +17,7 @@ const Voucher = () => {
     const fetchBooking = async () => {
       try {
         const response = await axios.get(
-          `http://localhost:3001/booking/${bookingId}/voucher`
+          `https://carmanagementsystem-production.up.railway.app/booking/${bookingId}/voucher`
         );
         setBooking(response.data);
       } catch (err) {

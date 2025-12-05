@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const BASE_URL = "http://localhost:3000"; // your backend URL
+const BASE_URL = "https://carmanagementsystem-production.up.railway.app"; // your backend URL
 
 // Fetch all cars
 export const getCars = async () => {

@@ -14,7 +14,7 @@ const Signup = () => {
     setLoading(true);
 
     try {
-      const response = await axios.post("http://localhost:3001/jwt-auth/signup", {
+      const response = await axios.post("https://carmanagementsystem-production.up.railway.app/jwt-auth/signup", {
         Name,
         email,
         password,

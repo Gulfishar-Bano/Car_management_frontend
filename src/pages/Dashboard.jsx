@@ -59,7 +59,7 @@ const Dashboard = () => {
   setLoading(true);
 
   try {
-    const response = await axios.get("http://localhost:3001/fare/route", {
+    const response = await axios.get("https://carmanagementsystem-production.up.railway.app/fare/route", {
       params: {
         from:fromLoc,
         to: ToLoc,

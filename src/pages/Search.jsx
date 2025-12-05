@@ -10,7 +10,7 @@ const Search = () => {
   const [carTypeId, setCarTypeId] = useState("");
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
-  const BASE_URL = "http://localhost:3001";
+  const BASE_URL = "https://carmanagementsystem-production.up.railway.app";
 
   const handleSearch = async (e) => {
     e.preventDefault();
@@ -18,7 +18,7 @@ const Search = () => {
 
 
     try {
-      const response = await axios.post("http://localhost:3001/search", {
+      const response = await axios.post("https://carmanagementsystem-production.up.railway.app/search", {
         fromLoc,
         toLoc,
         date,

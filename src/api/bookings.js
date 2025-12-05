@@ -1,10 +1,10 @@
 import axios from "axios";
 
-const API_URL = "http://localhost:3001/booking"; // change if backend runs elsewhere
+const API_URL = "https://carmanagementsystem-production.up.railway.app/booking"; 
 
 // Create a new booking
 export const createBooking = async (data) => {
-  const token = localStorage.getItem("token"); // get fresh token
+  const token = localStorage.getItem("token"); 
   const authHeader = { headers: { Authorization: `Bearer ${token}` } };
   const response = await axios.post(`${API_URL}/CreateBooking`, data, authHeader);
   return response.data;
@@ -26,7 +26,7 @@ export const getBooking = async (id) => {
   return response.data;
 };
 
-// Update booking
+
 export const updateBooking = async (id, data) => {
   const token = localStorage.getItem("token");
   const authHeader = { headers: { Authorization: `Bearer ${token}` } };
@@ -34,7 +34,7 @@ export const updateBooking = async (id, data) => {
   return response.data;
 };
 
-// Assign driver & car
+
 export const assignCarDriver = async (bookingId, carId, driverId) => {
   const token = localStorage.getItem("token");
   const authHeader = { headers: { Authorization: `Bearer ${token}` } };

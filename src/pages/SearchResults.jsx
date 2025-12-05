@@ -6,7 +6,7 @@ const SearchResults = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const results = location.state?.results || [];
-  const BASE_URL = "http://localhost:3001";
+  const BASE_URL = "https://carmanagementsystem-production.up.railway.app";
   console.log("Search Results Data:", results);
 
   const handleBook = (item) => {
