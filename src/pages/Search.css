@@ -15,6 +15,12 @@
   grid-template-columns: repeat(3, 1fr);
   gap: 15px;
   margin-bottom: 20px;
+  position: relative; /* Add this if suggestions are direct child */
+}
+
+.input-wrapper {
+  position: relative; /* Needed for autocomplete dropdown */
+  width: 100%;
 }
 
 .search-form input,
@@ -23,6 +29,7 @@
   font-size: 16px;
   border-radius: 6px;
   border: 1px solid #ccc;
+  width: 100%;
 }
 
 .search-form button {
@@ -107,4 +114,40 @@
 
 .book-button:hover {
   background: #1f7f36;
+}
+
+.suggestions-list {
+  border: 1px solid #ccc;
+  max-height: 150px;
+  overflow-y: auto;
+  background: white;
+  position: absolute;
+  z-index: 1000;
+  width: 100%;
+  top: 100%; /* Place below input */
+  left: 0;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.suggestions-list li {
+  padding: 8px;
+  cursor: pointer;
+}
+
+.suggestions-list li:hover {
+  background-color: #f0f0f0;
+}
+
+/* TEMPORARY DEBUGGING CSS - REMOVE LATER */
+.input-wrapper {
+  position: relative; 
+  /* TEMPORARILY REMOVE GRID COLUMN SPAN */
+  /* grid-column: span 1; */ 
+  z-index: 99999; /* Max Z-index */
+}
+.input-wrapper input {
+  position: relative; /* Ensure the input itself has high stacking context */
+  z-index: 100000; 
 }

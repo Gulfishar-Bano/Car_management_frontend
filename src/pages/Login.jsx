@@ -14,7 +14,7 @@ const Login = () => {
     e.preventDefault();
 
     try {
-      const res = await axios.post("https://carmanagementsystem-production.up.railway.app/jwt-auth/login", {
+      const res = await axios.post(process.env.REACT_APP_BACKEND_URL+"/jwt-auth/login", {
         email,
         password,
       });

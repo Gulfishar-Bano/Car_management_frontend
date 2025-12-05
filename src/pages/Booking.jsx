@@ -94,10 +94,10 @@ const Booking = () => {
       <h2>Confirm Your Booking</h2>
 
       <div className="ride-summary">
-        <p><strong>From:</strong> {ride.from || "N/A"}</p>
-        <p><strong>To:</strong> {ride.to || "N/A"}</p>
+        <p><strong>From:</strong> {ride.FromLocation || "N/A"}</p>
+        <p><strong>To:</strong> {ride.ToLocation || "N/A"}</p>
         <p><strong>Car Model:</strong> {ride.car?.model || "N/A"}</p>
-        {/* Displaying the fare value, even though we send the fare ID */}
+    
         <p><strong>Total Fare:</strong> ₹{ride.finalFare || ride.fare || "N/A"}</p>
       </div>
 

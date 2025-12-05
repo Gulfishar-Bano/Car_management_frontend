@@ -6,7 +6,7 @@ const SearchResults = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const results = location.state?.results || [];
-  const BASE_URL = "https://carmanagementsystem-production.up.railway.app";
+  const BASE_URL = process.env.REACT_APP_BACKEND_URL;
   console.log("Search Results Data:", results);
 
   const handleBook = (item) => {
@@ -46,7 +46,7 @@ const SearchResults = () => {
                 <h4>{item.car?.model}</h4>
                 <p><strong>Car No:</strong> {item.car?.carNo}</p>
                 <p><strong>AC:</strong> {item.car?.ac ? "Yes" : "No"}</p>
-                <p><strong>Seats:</strong> {item.car?.seats}</p>
+                <p><strong>Seats:</strong> {item.car?.noOfSeats}</p>
 
                 <p><strong>Base Fare:</strong> ₹{item.fare}</p>
                 <p><strong>Final Fare:</strong> ₹{item.finalFare}</p>

@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import "../App.css";
 import { Swiper, SwiperSlide } from "swiper/react";
@@ -22,6 +21,12 @@ const Dashboard = () => {
   const [carTypeId, setCarTypeId] = useState("");
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
+  
+  // 1. Separate states for 'from' and 'to' suggestions
+  const [fromSuggestions, setFromSuggestions] = useState([]);
+  const [toSuggestions, setToSuggestions] = useState([]);
+
+  const BASE_URL = process.env.REACT_APP_BACKEND_URL;
 
   // Get user name from token
   useEffect(() => {
@@ -36,7 +41,7 @@ const Dashboard = () => {
     }
   }, []);
 
-   const slides = [
+  const slides = [
     {
       img: "https://media.istockphoto.com/id/1344954298/photo/family-with-dog-in-the-car.jpg?s=612x612&w=0&k=20&c=anIzsubkI7wzUiSHC_gUIVyJuSX2KXJ1-Lu5c25CCzA=",
       title: "Welcome to Car Management",
@@ -54,175 +59,260 @@ const Dashboard = () => {
     },
   ];
 
- const handleSearch = async (e) => {
-  e.preventDefault();
-  setLoading(true);
+  // 2. Handler for 'From Location' input
+  const handleFromChange = async (e) => {
+    const value = e.target.value;
+    setFrom(value);
+    setFromSuggestions([]); // Clear previous suggestions
 
-  try {
-    const response = await axios.get("https://carmanagementsystem-production.up.railway.app/fare/route", {
-      params: {
-        from:fromLoc,
-        to: ToLoc,
-        date,
-        ac: ac === "yes",
-        carTypeId: carTypeId ? Number(carTypeId) : undefined,
-      },
-    });
+    if (value.length >= 2) {
+      try {
+        const res = await axios.get(`${BASE_URL}/search/autocomplete`, {
+          params: { name: value },
+        });
+        setFromSuggestions(res.data);
+      } catch (err) {
+        console.error("From Autocomplete API failed:", err);
+      }
+    } else {
+      setFromSuggestions([]);
+    }
+  };
 
-    setResults(response.data);
-    navigate("/search-results", { state: { results: response.data } });
-  } catch (error) {
-    console.error(error);
-    alert("Search failed");
-  }
+  // 3. Handler for 'To Location' input
+  const handleToChange = async (e) => {
+    const value = e.target.value;
+    setTo(value);
+    setToSuggestions([]); // Clear previous suggestions
 
-  setLoading(false);
-};
+    if (value.length >= 2) {
+      try {
+        const res = await axios.get(`${BASE_URL}/search/autocomplete`, {
+          params: { name: value },
+        });
+        setToSuggestions(res.data);
+      } catch (err) {
+        console.error("To Autocomplete API failed:", err);
+      }
+    } else {
+      setToSuggestions([]);
+    }
+  };
 
 
-  return (<div className="container">
-   
+  const handleSearch = async (e) => {
+    e.preventDefault();
+    setLoading(true);
 
-    {/* Carousel */}
-    <Swiper
-      modules={[Navigation, Pagination, Autoplay]}
-      navigation
-      pagination={{ clickable: true }}
-      autoplay={{ delay: 3000 }}
-      loop
+    try {
+      const response = await axios.get(BASE_URL + "/fare/route", {
+        params: {
+          from: fromLoc,
+          to: ToLoc,
+          date,
+          ac: ac === "yes",
+          carTypeId: carTypeId ? Number(carTypeId) : undefined,
+        },
+      });
+
+      setResults(response.data);
+      navigate("/search-results", { state: { results: response.data } });
+    } catch (error) {
+      console.error(error);
+      alert("Search failed");
+    }
+
+    setLoading(false);
+  };
+
+  const SuggestionList = ({ suggestions, setValue, setSuggestions }) => (
+    <ul
       style={{
-        width: "100%",
-        height: "500px",
-        marginBottom: "30px",
-        borderRadius: "15px",
-        overflow: "hidden",
+        position: "absolute",
+        top: "100%",
+        left: 0,
+        right: 0,
+        backgroundColor: "#fff",
+        border: "1px solid #ccc",
+        borderRadius: "0 0 8px 8px",
+        zIndex: 10,
+        listStyle: "none",
+        padding: 0,
+        margin: 0,
+        maxHeight: "200px",
+        overflowY: "auto",
+        boxShadow: "0 4px 6px rgba(0,0,0,0.1)",
       }}
     >
-      {slides.map((slide, index) => (
-        <SwiperSlide key={index}>
-          <div
+      {suggestions.map((item, index) => (
+        <li
+          key={index}
+          onClick={() => {
+            setValue(item.location); // Set the specific location state (From or To)
+            setSuggestions([]);     // Clear the specific suggestions state
+          }}
+          style={{
+            padding: "10px",
+            cursor: "pointer",
+            borderBottom: "1px solid #eee",
+          }}
+          onMouseEnter={(e) => (e.target.style.backgroundColor = "#f0f0f0")}
+          onMouseLeave={(e) => (e.target.style.backgroundColor = "#fff")}
+        >
+          {item.location}
+        </li>
+      ))}
+    </ul>
+  );
+
+  return (
+    <div className="container">
+      {/* Carousel (content omitted for brevity) */}
+      <Swiper
+        modules={[Navigation, Pagination, Autoplay]}
+        navigation
+        pagination={{ clickable: true }}
+        autoplay={{ delay: 3000 }}
+        loop
+        style={{
+          width: "100%",
+          height: "500px",
+          marginBottom: "30px",
+          borderRadius: "15px",
+          overflow: "hidden",
+        }}
+      >
+        {slides.map((slide, index) => (
+          <SwiperSlide key={index}>
+            <div
+              style={{
+                backgroundImage: `url(${slide.img})`,
+                backgroundSize: "cover",
+                backgroundPosition: "center",
+                height: "100%",
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "center",
+                alignItems: "center",
+                color: "#fff",
+                textShadow: "2px 2px 5px rgba(0,0,0,0.6)",
+              }}
+            >
+              <h2 style={{ fontSize: "36px", marginBottom: "10px" }}>
+                {slide.title}
+              </h2>
+              <p style={{ fontSize: "20px" }}>{slide.desc}</p>
+            </div>
+          </SwiperSlide>
+        ))}
+      </Swiper>
+
+      {/* Modern Search Box */}
+      <div
+        style={{
+          maxWidth: "800px",
+          margin: "0 auto",
+          padding: "25px",
+          borderRadius: "12px",
+          background: "#ffffff",
+          boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
+        }}
+      >
+        <h2 style={{ textAlign: "center", marginBottom: "20px" }}>
+          Find Your Ride
+        </h2>
+
+        <form
+          style={{
+            display: "grid",
+            gridTemplateColumns: "1fr 1fr",
+            gap: "15px",
+          }}
+          onSubmit={handleSearch}
+        >
+          {/* FROM LOCATION INPUT */}
+          <div style={{ position: "relative" }}>
+            <input
+              type="text"
+              placeholder="From Location"
+              value={fromLoc}
+              onChange={handleFromChange} // <-- Use handleFromChange
+              required
+              className="input-modern"
+            />
+            {fromSuggestions.length > 0 && (
+              <SuggestionList 
+                suggestions={fromSuggestions}
+                setValue={setFrom}
+                setSuggestions={setFromSuggestions}
+              />
+            )}
+          </div>
+          
+          {/* TO LOCATION INPUT */}
+          <div style={{ position: "relative" }}>
+            <input
+              type="text"
+              placeholder="To Location"
+              value={ToLoc}
+              onChange={handleToChange} // <-- Use handleToChange
+              required
+              className="input-modern"
+            />
+            {toSuggestions.length > 0 && (
+              <SuggestionList 
+                suggestions={toSuggestions}
+                setValue={setTo}
+                setSuggestions={setToSuggestions}
+              />
+            )}
+          </div>
+
+          <input
+            type="date"
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
+            required
+            className="input-modern"
+          />
+
+          <select
+            value={ac}
+            onChange={(e) => setAc(e.target.value)}
+            className="input-modern"
+          >
+            <option value="">AC Preference</option>
+            <option value="yes">AC</option>
+            <option value="no">Non-AC</option>
+          </select>
+
+          <button
+            type="submit"
+            disabled={loading}
             style={{
-              backgroundImage: `url(${slide.img})`,
-              backgroundSize: "cover",
-              backgroundPosition: "center",
-              height: "100%",
-              display: "flex",
-              flexDirection: "column",
-              justifyContent: "center",
-              alignItems: "center",
-              color: "#fff",
-              textShadow: "2px 2px 5px rgba(0,0,0,0.6)",
+              gridColumn: "1 / 3",
+              padding: "12px",
+              fontSize: "16px",
+              borderRadius: "8px",
+              border: "none",
+              background: "#007bff",
+              color: "white",
+              cursor: "pointer",
             }}
           >
-            <h2 style={{ fontSize: "36px", marginBottom: "10px" }}>
-              {slide.title}
-            </h2>
-            <p style={{ fontSize: "20px" }}>{slide.desc}</p>
-          </div>
-        </SwiperSlide>
-      ))}
-    </Swiper>
+            {loading ? "Searching..." : "Search"}
+          </button>
+        </form>
+      </div>
 
-    {/* Modern Search Box */}
-    <div
-      style={{
-        maxWidth: "800px",
-        margin: "0 auto",
-        padding: "25px",
-        borderRadius: "12px",
-        background: "#ffffff",
-        boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
-      }}
-    >
-      <h2 style={{ textAlign: "center", marginBottom: "20px" }}>
-        Find Your Ride
-      </h2>
-
-      <form
-        style={{
-          display: "grid",
-          gridTemplateColumns: "1fr 1fr",
-          gap: "15px",
-        }}
-        onSubmit={handleSearch}
-      >
-        <input
-          type="text"
-          placeholder="From Location"
-          value={fromLoc}
-          onChange={(e) => setFrom(e.target.value)}
-          required
-          className="input-modern"
-        />
-
-        <input
-          type="text"
-          placeholder="To Location"
-          value={ToLoc}
-          onChange={(e) => setTo(e.target.value)}
-          required
-          className="input-modern"
-        />
-
-        <input
-          type="date"
-          value={date}
-          onChange={(e) => setDate(e.target.value)}
-          required
-          className="input-modern"
-        />
-
-        <select
-          value={ac}
-          onChange={(e) => setAc(e.target.value)}
-          className="input-modern"
-        >
-          <option value="">AC Preference</option>
-          <option value="yes">AC</option>
-          <option value="no">Non-AC</option>
-        </select>
-
-        <input
-          type="number"
-          placeholder="Car Type ID (optional)"
-          value={carTypeId}
-          onChange={(e) => setCarTypeId(e.target.value)}
-          className="input-modern"
-        />
-
-        <button
-          type="submit"
-          disabled={loading}
-          style={{
-            gridColumn: "1 / 3",
-            padding: "12px",
-            fontSize: "16px",
-            borderRadius: "8px",
-            border: "none",
-            background: "#007bff",
-            color: "white",
-            cursor: "pointer",
-          }}
-        >
-          {loading ? "Searching..." : "Search"}
-        </button>
-      </form>
+      {/* No results message */}
+      {results.length === 0 && !loading && (
+        <p style={{ textAlign: "center", marginTop: "20px", color: "#777" }}>
+          No results yet — search something 😊
+        </p>
+      )}
     </div>
-
-    {/* No results message */}
-    {results.length === 0 && !loading && (
-      <p style={{ textAlign: "center", marginTop: "20px", color: "#777" }}>
-        No results yet — search something 😊
-      </p>
-    )}
-  </div>
-  )
-
-
-}
+  );
+};
 
 export default Dashboard;
-
-
-
-

@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const BASE_URL = "https://carmanagementsystem-production.up.railway.app"; // your backend URL
+const BASE_URL = process.env.REACT_APP_BACKEND_URL; 
 
 // Fetch all cars
 export const getCars = async () => {
