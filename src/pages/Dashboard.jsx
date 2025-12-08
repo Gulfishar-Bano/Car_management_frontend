@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react"; // FIXED
 import "../App.css";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Pagination, Autoplay } from "swiper/modules";
@@ -7,8 +7,8 @@ import "swiper/css/navigation";
 import "swiper/css/pagination";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-
 import { jwtDecode } from "jwt-decode";
+import debounce from "lodash.debounce";
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -22,13 +22,11 @@ const Dashboard = () => {
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
   
-  // 1. Separate states for 'from' and 'to' suggestions
   const [fromSuggestions, setFromSuggestions] = useState([]);
   const [toSuggestions, setToSuggestions] = useState([]);
 
   const BASE_URL = process.env.REACT_APP_BACKEND_URL;
 
-  // Get user name from token
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (token) {
@@ -59,46 +57,48 @@ const Dashboard = () => {
     },
   ];
 
-  // 2. Handler for 'From Location' input
-  const handleFromChange = async (e) => {
-    const value = e.target.value;
-    setFrom(value);
-    setFromSuggestions([]); // Clear previous suggestions
-
-    if (value.length >= 2) {
+  const fetchSuggestions = useCallback(
+    debounce(async (value, type) => {
       try {
         const res = await axios.get(`${BASE_URL}/search/autocomplete`, {
           params: { name: value },
         });
-        setFromSuggestions(res.data);
+        
+        if (type === "from") {
+          setFromSuggestions(res.data);
+        } else {
+          setToSuggestions(res.data);
+        }
       } catch (err) {
-        console.error("From Autocomplete API failed:", err);
+        console.error("Autocomplete API failed:", err);
       }
+    }, 500), 
+    [BASE_URL]
+  );
+
+  const handleFromChange = (e) => {
+    const value = e.target.value;
+    setFrom(value);
+    if (value.length >= 2) {
+      fetchSuggestions(value, "from");
     } else {
       setFromSuggestions([]);
     }
   };
 
-  // 3. Handler for 'To Location' input
-  const handleToChange = async (e) => {
+  const handleToChange = (e) => {
     const value = e.target.value;
     setTo(value);
-    setToSuggestions([]); // Clear previous suggestions
-
     if (value.length >= 2) {
-      try {
-        const res = await axios.get(`${BASE_URL}/search/autocomplete`, {
-          params: { name: value },
-        });
-        setToSuggestions(res.data);
-      } catch (err) {
-        console.error("To Autocomplete API failed:", err);
-      }
+      fetchSuggestions(value, "to");
     } else {
       setToSuggestions([]);
     }
   };
 
+  useEffect(() => {
+    return () => fetchSuggestions.cancel();
+  }, [fetchSuggestions]);
 
   const handleSearch = async (e) => {
     e.preventDefault();
@@ -148,8 +148,8 @@ const Dashboard = () => {
         <li
           key={index}
           onClick={() => {
-            setValue(item.location); // Set the specific location state (From or To)
-            setSuggestions([]);     // Clear the specific suggestions state
+            setValue(item.location);
+            setSuggestions([]); 
           }}
           style={{
             padding: "10px",
@@ -167,7 +167,6 @@ const Dashboard = () => {
 
   return (
     <div className="container">
-      {/* Carousel (content omitted for brevity) */}
       <Swiper
         modules={[Navigation, Pagination, Autoplay]}
         navigation
@@ -207,7 +206,6 @@ const Dashboard = () => {
         ))}
       </Swiper>
 
-      {/* Modern Search Box */}
       <div
         style={{
           maxWidth: "800px",
@@ -230,13 +228,12 @@ const Dashboard = () => {
           }}
           onSubmit={handleSearch}
         >
-          {/* FROM LOCATION INPUT */}
           <div style={{ position: "relative" }}>
             <input
               type="text"
               placeholder="From Location"
               value={fromLoc}
-              onChange={handleFromChange} // <-- Use handleFromChange
+              onChange={handleFromChange}
               required
               className="input-modern"
             />
@@ -249,13 +246,12 @@ const Dashboard = () => {
             )}
           </div>
           
-          {/* TO LOCATION INPUT */}
           <div style={{ position: "relative" }}>
             <input
               type="text"
               placeholder="To Location"
               value={ToLoc}
-              onChange={handleToChange} // <-- Use handleToChange
+              onChange={handleToChange}
               required
               className="input-modern"
             />
@@ -305,7 +301,6 @@ const Dashboard = () => {
         </form>
       </div>
 
-      {/* No results message */}
       {results.length === 0 && !loading && (
         <p style={{ textAlign: "center", marginTop: "20px", color: "#777" }}>
           No results yet — search something 😊

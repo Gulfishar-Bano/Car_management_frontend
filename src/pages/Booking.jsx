@@ -36,13 +36,12 @@ const Booking = () => {
       return;
     }
     
-    // 2. Extract Car ID and Fare ID from the received ride object
+ 
     const carId = ride.car?.id;
-    // Assuming the fare ID is stored directly on the 'ride' object, 
-    // perhaps from the search result.
+ 
     const fareId = ride.fareId || ride.id; 
 
-    // 3. Add validation for the required hidden IDs
+    
     if (!carId || !fareId) { 
       setError("Missing car selection or fare details. Please go back and try again.");
       return;
@@ -56,7 +55,7 @@ const Booking = () => {
       DropLocation: ride.ToLocation,
       Date: userDetails.Date, 
       
-      // ✅ Corrected fields for the Backend DTO
+    
       carId: carId,       
       fareId: fareId,    
     };

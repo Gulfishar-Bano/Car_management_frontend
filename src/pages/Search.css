@@ -151,3 +151,21 @@
   position: relative; /* Ensure the input itself has high stacking context */
   z-index: 100000; 
 }
+.ride-card {
+  position: relative; /* Essential for absolute positioning of the counter */
+}
+
+.viewer-count-badge {
+  position: absolute;
+  bottom: 5px; /* Adjust to sit right above the button */
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  white-space: nowrap;
+  background-color: #fff;
+  border: 1px solid #ff4d4f;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-size: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
