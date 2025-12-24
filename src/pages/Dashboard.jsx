@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from "react"; // FIXED
+import React, { useState, useEffect, useCallback } from "react";
 import "../App.css";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Pagination, Autoplay } from "swiper/modules";
@@ -14,6 +14,7 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const [userName, setUserName] = useState("");
 
+  // Search States
   const [fromLoc, setFrom] = useState("");
   const [ToLoc, setTo] = useState("");
   const [date, setDate] = useState("");
@@ -21,9 +22,16 @@ const Dashboard = () => {
   const [carTypeId, setCarTypeId] = useState("");
   const [results, setResults] = useState([]);
   const [loading, setLoading] = useState(false);
-  
   const [fromSuggestions, setFromSuggestions] = useState([]);
   const [toSuggestions, setToSuggestions] = useState([]);
+
+  // AI Chat States
+  const [chatOpen, setChatOpen] = useState(false);
+  const [chatInput, setChatInput] = useState("");
+  const [isTyping, setIsTyping] = useState(false);
+  const [chatHistory, setChatHistory] = useState([
+    { role: "ai", text: "Hello! I'm Carisma AI. Need help finding the perfect ride?" }
+  ]);
 
   const BASE_URL = process.env.REACT_APP_BACKEND_URL;
 
@@ -63,47 +71,32 @@ const Dashboard = () => {
         const res = await axios.get(`${BASE_URL}/search/autocomplete`, {
           params: { name: value },
         });
-        
-        if (type === "from") {
-          setFromSuggestions(res.data);
-        } else {
-          setToSuggestions(res.data);
-        }
+        if (type === "from") setFromSuggestions(res.data);
+        else setToSuggestions(res.data);
       } catch (err) {
         console.error("Autocomplete API failed:", err);
       }
-    }, 500), 
+    }, 500),
     [BASE_URL]
   );
 
   const handleFromChange = (e) => {
     const value = e.target.value;
     setFrom(value);
-    if (value.length >= 2) {
-      fetchSuggestions(value, "from");
-    } else {
-      setFromSuggestions([]);
-    }
+    if (value.length >= 2) fetchSuggestions(value, "from");
+    else setFromSuggestions([]);
   };
 
   const handleToChange = (e) => {
     const value = e.target.value;
     setTo(value);
-    if (value.length >= 2) {
-      fetchSuggestions(value, "to");
-    } else {
-      setToSuggestions([]);
-    }
+    if (value.length >= 2) fetchSuggestions(value, "to");
+    else setToSuggestions([]);
   };
-
-  useEffect(() => {
-    return () => fetchSuggestions.cancel();
-  }, [fetchSuggestions]);
 
   const handleSearch = async (e) => {
     e.preventDefault();
     setLoading(true);
-
     try {
       const response = await axios.get(BASE_URL + "/fare/route", {
         params: {
@@ -114,51 +107,41 @@ const Dashboard = () => {
           carTypeId: carTypeId ? Number(carTypeId) : undefined,
         },
       });
-
       setResults(response.data);
       navigate("/search-results", { state: { results: response.data } });
     } catch (error) {
       console.error(error);
       alert("Search failed");
     }
-
     setLoading(false);
   };
 
+  // CORRECTED: This now calls your NestJS backend
+  const handleSendMessage = async () => {
+    if (!chatInput.trim()) return;
+    const userText = chatInput;
+    
+    setChatHistory((prev) => [...prev, { role: "user", text: userText }]);
+    setChatInput("");
+    setIsTyping(true);
+
+    try {
+      // Endpoint matches the NestJS Controller we defined (@Post('chat'))
+      const response = await axios.post(`${BASE_URL}/ai/chat`, { message: userText });
+      const aiReply = response.data.reply;
+      setChatHistory((prev) => [...prev, { role: "ai", text: aiReply }]);
+    } catch (error) {
+      console.error("AI Fetch Error:", error);
+      setChatHistory((prev) => [...prev, { role: "ai", text: "I'm having trouble connecting to my backend brain." }]);
+    } finally {
+      setIsTyping(false);
+    }
+  };
+
   const SuggestionList = ({ suggestions, setValue, setSuggestions }) => (
-    <ul
-      style={{
-        position: "absolute",
-        top: "100%",
-        left: 0,
-        right: 0,
-        backgroundColor: "#fff",
-        border: "1px solid #ccc",
-        borderRadius: "0 0 8px 8px",
-        zIndex: 10,
-        listStyle: "none",
-        padding: 0,
-        margin: 0,
-        maxHeight: "200px",
-        overflowY: "auto",
-        boxShadow: "0 4px 6px rgba(0,0,0,0.1)",
-      }}
-    >
+    <ul style={{ position: "absolute", top: "100%", left: 0, right: 0, backgroundColor: "#fff", border: "1px solid #ccc", borderRadius: "0 0 8px 8px", zIndex: 10, listStyle: "none", padding: 0, margin: 0, maxHeight: "200px", overflowY: "auto", boxShadow: "0 4px 6px rgba(0,0,0,0.1)" }}>
       {suggestions.map((item, index) => (
-        <li
-          key={index}
-          onClick={() => {
-            setValue(item.location);
-            setSuggestions([]); 
-          }}
-          style={{
-            padding: "10px",
-            cursor: "pointer",
-            borderBottom: "1px solid #eee",
-          }}
-          onMouseEnter={(e) => (e.target.style.backgroundColor = "#f0f0f0")}
-          onMouseLeave={(e) => (e.target.style.backgroundColor = "#fff")}
-        >
+        <li key={index} onClick={() => { setValue(item.location); setSuggestions([]); }} style={{ padding: "10px", cursor: "pointer", borderBottom: "1px solid #eee" }} onMouseEnter={(e) => (e.target.style.backgroundColor = "#f0f0f0")} onMouseLeave={(e) => (e.target.style.backgroundColor = "#fff")}>
           {item.location}
         </li>
       ))}
@@ -166,146 +149,78 @@ const Dashboard = () => {
   );
 
   return (
-    <div className="container">
-      <Swiper
-        modules={[Navigation, Pagination, Autoplay]}
-        navigation
-        pagination={{ clickable: true }}
-        autoplay={{ delay: 3000 }}
-        loop
-        style={{
-          width: "100%",
-          height: "500px",
-          marginBottom: "30px",
-          borderRadius: "15px",
-          overflow: "hidden",
-        }}
-      >
+    <div className="container" style={{ position: "relative", minHeight: "100vh" }}>
+      {/* HEADER SLIDER */}
+      <Swiper modules={[Navigation, Pagination, Autoplay]} navigation pagination={{ clickable: true }} autoplay={{ delay: 3000 }} loop style={{ width: "100%", height: "500px", marginBottom: "30px", borderRadius: "15px", overflow: "hidden" }}>
         {slides.map((slide, index) => (
           <SwiperSlide key={index}>
-            <div
-              style={{
-                backgroundImage: `url(${slide.img})`,
-                backgroundSize: "cover",
-                backgroundPosition: "center",
-                height: "100%",
-                display: "flex",
-                flexDirection: "column",
-                justifyContent: "center",
-                alignItems: "center",
-                color: "#fff",
-                textShadow: "2px 2px 5px rgba(0,0,0,0.6)",
-              }}
-            >
-              <h2 style={{ fontSize: "36px", marginBottom: "10px" }}>
-                {slide.title}
-              </h2>
+            <div style={{ backgroundImage: `url(${slide.img})`, backgroundSize: "cover", backgroundPosition: "center", height: "100%", display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", color: "#fff", textShadow: "2px 2px 5px rgba(0,0,0,0.6)" }}>
+              <h2 style={{ fontSize: "36px", marginBottom: "10px" }}>{slide.title}</h2>
               <p style={{ fontSize: "20px" }}>{slide.desc}</p>
             </div>
           </SwiperSlide>
         ))}
       </Swiper>
 
-      <div
-        style={{
-          maxWidth: "800px",
-          margin: "0 auto",
-          padding: "25px",
-          borderRadius: "12px",
-          background: "#ffffff",
-          boxShadow: "0 4px 12px rgba(0,0,0,0.08)",
-        }}
-      >
-        <h2 style={{ textAlign: "center", marginBottom: "20px" }}>
-          Find Your Ride
-        </h2>
-
-        <form
-          style={{
-            display: "grid",
-            gridTemplateColumns: "1fr 1fr",
-            gap: "15px",
-          }}
-          onSubmit={handleSearch}
-        >
+      {/* SEARCH FORM */}
+      <div style={{ maxWidth: "800px", margin: "0 auto", padding: "25px", borderRadius: "12px", background: "#ffffff", boxShadow: "0 4px 12px rgba(0,0,0,0.08)" }}>
+        <h2 style={{ textAlign: "center", marginBottom: "20px" }}>Find Your Ride</h2>
+        <form style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "15px" }} onSubmit={handleSearch}>
           <div style={{ position: "relative" }}>
-            <input
-              type="text"
-              placeholder="From Location"
-              value={fromLoc}
-              onChange={handleFromChange}
-              required
-              className="input-modern"
-            />
-            {fromSuggestions.length > 0 && (
-              <SuggestionList 
-                suggestions={fromSuggestions}
-                setValue={setFrom}
-                setSuggestions={setFromSuggestions}
-              />
-            )}
+            <input type="text" placeholder="From Location" value={fromLoc} onChange={handleFromChange} required className="input-modern" />
+            {fromSuggestions.length > 0 && <SuggestionList suggestions={fromSuggestions} setValue={setFrom} setSuggestions={setFromSuggestions} />}
           </div>
-          
           <div style={{ position: "relative" }}>
-            <input
-              type="text"
-              placeholder="To Location"
-              value={ToLoc}
-              onChange={handleToChange}
-              required
-              className="input-modern"
-            />
-            {toSuggestions.length > 0 && (
-              <SuggestionList 
-                suggestions={toSuggestions}
-                setValue={setTo}
-                setSuggestions={setToSuggestions}
-              />
-            )}
+            <input type="text" placeholder="To Location" value={ToLoc} onChange={handleToChange} required className="input-modern" />
+            {toSuggestions.length > 0 && <SuggestionList suggestions={toSuggestions} setValue={setTo} setSuggestions={setToSuggestions} />}
           </div>
-
-          <input
-            type="date"
-            value={date}
-            onChange={(e) => setDate(e.target.value)}
-            required
-            className="input-modern"
-          />
-
-          <select
-            value={ac}
-            onChange={(e) => setAc(e.target.value)}
-            className="input-modern"
-          >
+          <input type="date" value={date} onChange={(e) => setDate(e.target.value)} required className="input-modern" />
+          <select value={ac} onChange={(e) => setAc(e.target.value)} className="input-modern">
             <option value="">AC Preference</option>
             <option value="yes">AC</option>
             <option value="no">Non-AC</option>
           </select>
-
-          <button
-            type="submit"
-            disabled={loading}
-            style={{
-              gridColumn: "1 / 3",
-              padding: "12px",
-              fontSize: "16px",
-              borderRadius: "8px",
-              border: "none",
-              background: "#007bff",
-              color: "white",
-              cursor: "pointer",
-            }}
-          >
+          <button type="submit" disabled={loading} style={{ gridColumn: "1 / 3", padding: "12px", fontSize: "16px", borderRadius: "8px", border: "none", background: "#007bff", color: "white", cursor: "pointer" }}>
             {loading ? "Searching..." : "Search"}
           </button>
         </form>
       </div>
 
-      {results.length === 0 && !loading && (
-        <p style={{ textAlign: "center", marginTop: "20px", color: "#777" }}>
-          No results yet — search something 😊
-        </p>
-      )}
+      {/* FLOATING AI CHATBOT UI */}
+      <div style={{ position: "fixed", bottom: "30px", right: "30px", zIndex: 1000 }}>
+        {!chatOpen ? (
+          <button onClick={() => setChatOpen(true)} style={{ borderRadius: "50%", width: "65px", height: "65px", backgroundColor: "#007bff", color: "white", border: "none", fontSize: "30px", cursor: "pointer", boxShadow: "0 6px 15px rgba(0,0,0,0.3)", display: "flex", justifyContent: "center", alignItems: "center" }}>
+            🤖
+          </button>
+        ) : (
+          <div style={{ width: "320px", height: "450px", backgroundColor: "white", borderRadius: "20px", boxShadow: "0 10px 30px rgba(0,0,0,0.2)", display: "flex", flexDirection: "column", overflow: "hidden", border: "1px solid #ddd" }}>
+            <div style={{ padding: "15px", backgroundColor: "#007bff", color: "white", display: "flex", justifyContent: "space-between", alignItems: "center", fontWeight: "bold" }}>
+              <span>Carisma AI Assistant</span>
+              <button onClick={() => setChatOpen(false)} style={{ background: "none", border: "none", color: "white", cursor: "pointer", fontSize: "18px" }}>✕</button>
+            </div>
+            
+            <div style={{ flex: 1, padding: "15px", overflowY: "auto", display: "flex", flexDirection: "column", gap: "10px", backgroundColor: "#f9f9f9" }}>
+              {chatHistory.map((msg, i) => (
+                <div key={i} style={{ alignSelf: msg.role === "user" ? "flex-end" : "flex-start", maxWidth: "80%", padding: "10px", borderRadius: "15px", fontSize: "14px", backgroundColor: msg.role === "user" ? "#007bff" : "#e4e6eb", color: msg.role === "user" ? "white" : "black" }}>
+                  {msg.text}
+                </div>
+              ))}
+              {isTyping && <div style={{ fontSize: "12px", color: "#aaa" }}>AI is typing...</div>}
+            </div>
+
+            <div style={{ padding: "10px", borderTop: "1px solid #eee", display: "flex", gap: "5px", backgroundColor: "white" }}>
+              <input 
+                value={chatInput} 
+                onChange={(e) => setChatInput(e.target.value)} 
+                onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+                placeholder="Ask about car types..." 
+                style={{ flex: 1, border: "1px solid #ddd", borderRadius: "20px", padding: "8px 15px", outline: "none" }}
+              />
+              <button onClick={handleSendMessage} style={{ backgroundColor: "#007bff", color: "white", border: "none", borderRadius: "50%", width: "35px", height: "35px", cursor: "pointer" }}>➤</button>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 };
