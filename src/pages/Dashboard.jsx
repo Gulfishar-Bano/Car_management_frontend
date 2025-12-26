@@ -1,29 +1,26 @@
 import React, { useState, useEffect, useCallback } from "react";
-import "../App.css";
 import { Swiper, SwiperSlide } from "swiper/react";
-import { Navigation, Pagination, Autoplay } from "swiper/modules";
-import "swiper/css";
-import "swiper/css/navigation";
-import "swiper/css/pagination";
+import { Navigation, Pagination, Autoplay, EffectFade } from "swiper/modules";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import { jwtDecode } from "jwt-decode";
-import debounce from "lodash.debounce";
+
+// Swiper Styles
+import "swiper/css";
+import "swiper/css/effect-fade";
+import "swiper/css/navigation";
+import "swiper/css/pagination";
+
 
 const Dashboard = () => {
   const navigate = useNavigate();
-  const [userName, setUserName] = useState("");
+  const BASE_URL = process.env.REACT_APP_BACKEND_URL || "http://localhost:3001";
 
   // Search States
   const [fromLoc, setFrom] = useState("");
-  const [ToLoc, setTo] = useState("");
-  const [date, setDate] = useState("");
-  const [ac, setAc] = useState("");
-  const [carTypeId, setCarTypeId] = useState("");
-  const [results, setResults] = useState([]);
+  const [toLoc, setTo] = useState("");
   const [loading, setLoading] = useState(false);
-  const [fromSuggestions, setFromSuggestions] = useState([]);
-  const [toSuggestions, setToSuggestions] = useState([]);
+  const [activeField, setActiveField] = useState(null);
+  const [popularDestinations, setPopularDestinations] = useState([]);
 
   // AI Chat States
   const [chatOpen, setChatOpen] = useState(false);
@@ -33,160 +30,201 @@ const Dashboard = () => {
     { role: "ai", text: "Hello! I'm Carisma AI. Need help finding the perfect ride?" }
   ]);
 
-  const BASE_URL = process.env.REACT_APP_BACKEND_URL;
-
+  // Fetch initial locations for autocomplete
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (token) {
+    const fetchLocations = async () => {
       try {
-        const decoded = jwtDecode(token);
-        setUserName(decoded.name);
-      } catch (err) {
-        console.error("Invalid token", err);
+        const response = await axios.get(`${BASE_URL}/fare/list`);
+        const allLocs = response.data.flatMap(item => [item.FromLocation, item.ToLocation]);
+        const uniqueLocations = [...new Set(allLocs)].filter(Boolean);
+        setPopularDestinations(uniqueLocations);
+      } catch (error) {
+        console.error("Error fetching locations:", error);
+        setPopularDestinations(["Bangalore", "Airport", "Downtown", "Station"]);
       }
-    }
-  }, []);
+    };
+    fetchLocations();
+  }, [BASE_URL]);
 
-  const slides = [
-    {
-      img: "https://media.istockphoto.com/id/1344954298/photo/family-with-dog-in-the-car.jpg?s=612x612&w=0&k=20&c=anIzsubkI7wzUiSHC_gUIVyJuSX2KXJ1-Lu5c25CCzA=",
-      title: "Welcome to Car Management",
-      desc: "Manage your fleet efficiently",
-    },
-    {
-      img: "https://media.istockphoto.com/id/1473771646/photo/a-young-man-buys-a-new-car.jpg?s=612x612&w=0&k=20&c=oLbi2keSg8g8-GSlJQ0wqHz-lAht8rqxaEQyviuyDPk=",
-      title: "Add Cars Easily",
-      desc: "Book Cars in one click",
-    },
-    {
-      img: "https://media.istockphoto.com/id/1410978545/photo/young-beautiful-woman-traveling-by-car-in-the-mountains-summer-vacation-and-adventure.jpg?s=612x612&w=0&k=20&c=wfQiudz-g1m0EHpjctcdw7g62GwnBrIa5Iax0LJTAGY=",
-      title: "Search Rides",
-      desc: "Find available rides instantly",
-    },
-  ];
-
-  const fetchSuggestions = useCallback(
-    debounce(async (value, type) => {
-      try {
-        const res = await axios.get(`${BASE_URL}/search/autocomplete`, {
-          params: { name: value },
-        });
-        if (type === "from") setFromSuggestions(res.data);
-        else setToSuggestions(res.data);
-      } catch (err) {
-        console.error("Autocomplete API failed:", err);
-      }
-    }, 500),
-    [BASE_URL]
-  );
-
-  const handleFromChange = (e) => {
-    const value = e.target.value;
-    setFrom(value);
-    if (value.length >= 2) fetchSuggestions(value, "from");
-    else setFromSuggestions([]);
-  };
-
-  const handleToChange = (e) => {
-    const value = e.target.value;
-    setTo(value);
-    if (value.length >= 2) fetchSuggestions(value, "to");
-    else setToSuggestions([]);
-  };
-
+  // --- Search Logic (Hits Backend) ---
   const handleSearch = async (e) => {
-    e.preventDefault();
+    if (e) e.preventDefault();
+    if (!fromLoc || !toLoc) return alert("Please enter both locations");
+
     setLoading(true);
     try {
-      const response = await axios.get(BASE_URL + "/fare/route", {
+      const response = await axios.get(`${BASE_URL}/fare/route`, {
         params: {
           from: fromLoc,
-          to: ToLoc,
-          date,
-          ac: ac === "yes",
-          carTypeId: carTypeId ? Number(carTypeId) : undefined,
+          to: toLoc,
+          // You can add date/ac here if you add inputs for them later
         },
       });
-      setResults(response.data);
       navigate("/search-results", { state: { results: response.data } });
     } catch (error) {
-      console.error(error);
-      alert("Search failed");
+      console.error("Search API failed:", error);
+      alert("Search failed. Check console for details.");
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
-  // CORRECTED: This now calls your NestJS backend
+  // --- Flip Logic ---
+  const handleFlip = () => {
+    const temp = fromLoc;
+    setFrom(toLoc);
+    setTo(temp);
+  };
+
+  const handleSelect = (value) => {
+    if (activeField === "from") setFrom(value);
+    if (activeField === "to") setTo(value);
+    setActiveField(null);
+  };
+
+  // --- Chatbot Logic ---
   const handleSendMessage = async () => {
     if (!chatInput.trim()) return;
     const userText = chatInput;
-    
-    setChatHistory((prev) => [...prev, { role: "user", text: userText }]);
+    setChatHistory(prev => [...prev, { role: "user", text: userText }]);
     setChatInput("");
     setIsTyping(true);
 
     try {
-      // Endpoint matches the NestJS Controller we defined (@Post('chat'))
       const response = await axios.post(`${BASE_URL}/ai/chat`, { message: userText });
-      const aiReply = response.data.reply;
-      setChatHistory((prev) => [...prev, { role: "ai", text: aiReply }]);
+      setChatHistory(prev => [...prev, { role: "ai", text: response.data.reply }]);
     } catch (error) {
-      console.error("AI Fetch Error:", error);
-      setChatHistory((prev) => [...prev, { role: "ai", text: "I'm having trouble connecting to my backend brain." }]);
+      setChatHistory(prev => [...prev, { role: "ai", text: "I'm having trouble connecting to my backend brain." }]);
     } finally {
       setIsTyping(false);
     }
   };
 
-  const SuggestionList = ({ suggestions, setValue, setSuggestions }) => (
-    <ul style={{ position: "absolute", top: "100%", left: 0, right: 0, backgroundColor: "#fff", border: "1px solid #ccc", borderRadius: "0 0 8px 8px", zIndex: 10, listStyle: "none", padding: 0, margin: 0, maxHeight: "200px", overflowY: "auto", boxShadow: "0 4px 6px rgba(0,0,0,0.1)" }}>
-      {suggestions.map((item, index) => (
-        <li key={index} onClick={() => { setValue(item.location); setSuggestions([]); }} style={{ padding: "10px", cursor: "pointer", borderBottom: "1px solid #eee" }} onMouseEnter={(e) => (e.target.style.backgroundColor = "#f0f0f0")} onMouseLeave={(e) => (e.target.style.backgroundColor = "#fff")}>
-          {item.location}
-        </li>
-      ))}
-    </ul>
-  );
-
   return (
-    <div className="container" style={{ position: "relative", minHeight: "100vh" }}>
-      {/* HEADER SLIDER */}
-      <Swiper modules={[Navigation, Pagination, Autoplay]} navigation pagination={{ clickable: true }} autoplay={{ delay: 3000 }} loop style={{ width: "100%", height: "500px", marginBottom: "30px", borderRadius: "15px", overflow: "hidden" }}>
-        {slides.map((slide, index) => (
-          <SwiperSlide key={index}>
-            <div style={{ backgroundImage: `url(${slide.img})`, backgroundSize: "cover", backgroundPosition: "center", height: "100%", display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", color: "#fff", textShadow: "2px 2px 5px rgba(0,0,0,0.6)" }}>
-              <h2 style={{ fontSize: "36px", marginBottom: "10px" }}>{slide.title}</h2>
-              <p style={{ fontSize: "20px" }}>{slide.desc}</p>
+    <div style={{ backgroundColor: "#0a0a0a", color: "#fff", minHeight: "100vh", fontFamily: "'Inter', sans-serif" }}>
+      
+      {/* 1. HERO SECTION */}
+      <section style={{ position: "relative", height: "90vh", width: "100%", overflow: "hidden" }}>
+        <Swiper modules={[Autoplay, EffectFade, Pagination]} effect="fade" autoplay={{ delay: 2000 }} loop style={{ height: "100%" }}>
+          <SwiperSlide style={{ backgroundImage: 'url("https://images.unsplash.com/photo-1503376780353-7e6692767b70?auto=format&fit=crop&q=80&w=2070")', backgroundSize: "cover", backgroundPosition: "center" }} />
+          <SwiperSlide style={{ backgroundImage: 'url("https://images.unsplash.com/photo-1542362567-b052600529d4?auto=format&fit=crop&q=80&w=2070")', backgroundSize: "cover", backgroundPosition: "center" }} />
+        <SwiperSlide style={{ backgroundImage: 'url("https://images.unsplash.com/photo-1614162692292-7ac56d7f7f1e?auto=format&fit=crop&q=80&w=2070")', backgroundSize: "cover", backgroundPosition: "center" }} />
+<SwiperSlide style={{ backgroundImage: 'url("https://images.unsplash.com/photo-1552519507-da3b142c6e3d?auto=format&fit=crop&q=80&w=2070")', backgroundSize: "cover", backgroundPosition: "center" }} />
+<SwiperSlide style={{ backgroundImage: 'url("https://images.unsplash.com/photo-1492144534655-ae79c964c9d7?auto=format&fit=crop&q=80&w=2070")', backgroundSize: "cover", backgroundPosition: "center" }} />
+<SwiperSlide style={{ backgroundImage: 'url("https://images.unsplash.com/photo-1494976388531-d1058494cdd8?auto=format&fit=crop&q=80&w=2070")', backgroundSize: "cover", backgroundPosition: "center" }} />
+        
+        </Swiper>
+
+        <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)", zIndex: 10, width: "95%", maxWidth: "1100px", textAlign: "center" }}>
+          <h1 style={{ fontSize: "4rem", fontWeight: "800", marginBottom: "35px" }}>Drive the <span style={{ color: "#007bff" }}>Future.</span></h1>
+          
+          <div style={{ background: "rgba(15, 15, 15, 0.95)", padding: "30px", borderRadius: "32px", display: "flex", gap: "15px", alignItems: "center", border: "1px solid rgba(255,255,255,0.1)", boxShadow: "0 30px 60px rgba(0,0,0,0.5)" }}>
+             
+             {/* FROM */}
+             <div style={{ flex: 1, textAlign: "left", position: "relative" }}>
+                <label style={{ display: "block", fontSize: "11px", fontWeight: "800", color: "#007bff", marginBottom: "8px" }}>PICKUP</label>
+                <input 
+                    onFocus={() => setActiveField("from")}
+                    onBlur={() => setTimeout(() => setActiveField(null), 200)}
+                    style={{ background: "#222", border: "none", color: "#fff", padding: "16px", borderRadius: "16px", width: "100%", outline: "none" }} 
+                    placeholder="Where from?" 
+                    value={fromLoc}
+                    onChange={(e) => setFrom(e.target.value)}
+                />
+                {activeField === "from" && (
+                    <div style={{ position: "absolute", top: "110%", left: 0, right: 0, backgroundColor: "#1a1a1a", borderRadius: "16px", zIndex: 50, border: "1px solid #333", maxHeight: "200px", overflowY: "auto" }}>
+                        {popularDestinations.filter(d => d.toLowerCase().includes(fromLoc.toLowerCase())).map((dest, i) => (
+                            <div key={i} onClick={() => handleSelect(dest)} style={{ padding: "12px 18px", cursor: "pointer", borderBottom: "1px solid #222" }}>📍 {dest}</div>
+                        ))}
+                    </div>
+                )}
+             </div>
+
+             {/* FLIP BUTTON */}
+             <button onClick={handleFlip} style={{ background: "#333", color: "#fff", border: "none", width: "40px", height: "40px", borderRadius: "50%", cursor: "pointer", fontSize: "18px", marginTop: "20px" }}>⇄</button>
+
+             {/* TO */}
+             <div style={{ flex: 1, textAlign: "left", position: "relative" }}>
+                <label style={{ display: "block", fontSize: "11px", fontWeight: "800", color: "#007bff", marginBottom: "8px" }}>DROPOFF</label>
+                <input 
+                  onFocus={() => setActiveField("to")}
+                  onBlur={() => setTimeout(() => setActiveField(null), 200)}
+                  style={{ background: "#222", border: "none", color: "#fff", padding: "16px", borderRadius: "16px", width: "100%", outline: "none" }} 
+                  placeholder="Where to?" 
+                  value={toLoc}
+                  onChange={(e) => setTo(e.target.value)}
+                />
+                {activeField === "to" && (
+                    <div style={{ position: "absolute", top: "110%", left: 0, right: 0, backgroundColor: "#1a1a1a", borderRadius: "16px", zIndex: 50, border: "1px solid #333", maxHeight: "200px", overflowY: "auto" }}>
+                        {popularDestinations.filter(d => d.toLowerCase().includes(toLoc.toLowerCase())).map((dest, i) => (
+                            <div key={i} onClick={() => handleSelect(dest)} style={{ padding: "12px 18px", cursor: "pointer", borderBottom: "1px solid #222" }}>📍 {dest}</div>
+                        ))}
+                    </div>
+                )}
+             </div>
+
+             <button 
+                onClick={handleSearch}
+                disabled={loading}
+                style={{ backgroundColor: "#007bff", color: "#fff", padding: "16px 35px", borderRadius: "16px", fontWeight: "bold", border: "none", cursor: "pointer", marginTop: "20px" }}
+             >
+                {loading ? "Searching..." : "Search"}
+             </button>
+          </div>
+        </div>
+      </section>
+ {/* 2. DESIGNED BENTO SERVICES SECTION */}
+      <section style={{ padding: "100px 5%", maxWidth: "1400px", margin: "0 auto" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: "50px" }}>
+            <div>
+                <h2 style={{ fontSize: "3rem", fontWeight: "800", margin: 0 }}>Explore Services</h2>
+                <p style={{ opacity: 0.6, fontSize: "1.1rem" }}>Premium mobility solutions tailored for you.</p>
             </div>
-          </SwiperSlide>
-        ))}
-      </Swiper>
+            <button style={{ background: "transparent", color: "#007bff", border: "1px solid #007bff", padding: "10px 25px", borderRadius: "30px", fontWeight: "600" }}>View All</button>
+        </div>
 
-      {/* SEARCH FORM */}
-      <div style={{ maxWidth: "800px", margin: "0 auto", padding: "25px", borderRadius: "12px", background: "#ffffff", boxShadow: "0 4px 12px rgba(0,0,0,0.08)" }}>
-        <h2 style={{ textAlign: "center", marginBottom: "20px" }}>Find Your Ride</h2>
-        <form style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "15px" }} onSubmit={handleSearch}>
-          <div style={{ position: "relative" }}>
-            <input type="text" placeholder="From Location" value={fromLoc} onChange={handleFromChange} required className="input-modern" />
-            {fromSuggestions.length > 0 && <SuggestionList suggestions={fromSuggestions} setValue={setFrom} setSuggestions={setFromSuggestions} />}
+        {/* The Grid Layout */}
+        <div style={{ 
+            display: "grid", 
+            gridTemplateColumns: "repeat(4, 1fr)", 
+            gridAutoRows: "240px", 
+            gap: "24px" 
+        }}>
+          {/* Main Large Card */}
+          <div style={{ gridColumn: "span 2", gridRow: "span 2", backgroundColor: "#1a1a1a", borderRadius: "32px", padding: "40px", backgroundImage: "url('https://images.unsplash.com/photo-1549317661-bd32c8ce0db2?auto=format&fit=crop&q=80&w=2070')", backgroundSize: "cover", position: "relative", overflow: "hidden" }}>
+              <div style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.4)" }} />
+              <div style={{ position: "relative", height: "100%", display: "flex", flexDirection: "column", justifyContent: "flex-end" }}>
+                <h3 style={{ fontSize: "2rem", margin: "0 0 10px 0" }}>Elite Airport Transfer</h3>
+                <p style={{ opacity: 0.8 }}>Priority pickup and luggage assistance.</p>
+              </div>
           </div>
-          <div style={{ position: "relative" }}>
-            <input type="text" placeholder="To Location" value={ToLoc} onChange={handleToChange} required className="input-modern" />
-            {toSuggestions.length > 0 && <SuggestionList suggestions={toSuggestions} setValue={setTo} setSuggestions={setToSuggestions} />}
-          </div>
-          <input type="date" value={date} onChange={(e) => setDate(e.target.value)} required className="input-modern" />
-          <select value={ac} onChange={(e) => setAc(e.target.value)} className="input-modern">
-            <option value="">AC Preference</option>
-            <option value="yes">AC</option>
-            <option value="no">Non-AC</option>
-          </select>
-          <button type="submit" disabled={loading} style={{ gridColumn: "1 / 3", padding: "12px", fontSize: "16px", borderRadius: "8px", border: "none", background: "#007bff", color: "white", cursor: "pointer" }}>
-            {loading ? "Searching..." : "Search"}
-          </button>
-        </form>
-      </div>
 
-      {/* FLOATING AI CHATBOT UI */}
+          {/* Business Card */}
+          <div style={{ gridColumn: "span 2", gridRow: "span 1", backgroundColor: "#007bff", borderRadius: "32px", padding: "30px", display: "flex", justifyContent: "space-between", alignItems: "center", transition: "transform 0.3s" }}>
+              <div>
+                <h3 style={{ fontSize: "1.8rem", margin: 0 }}>Business Class</h3>
+                <p style={{ margin: "5px 0 0 0" }}>Work on the go in silence.</p>
+              </div>
+              <span style={{ fontSize: "60px" }}>💼</span>
+          </div>
+
+          {/* EV Card */}
+          <div style={{ gridColumn: "span 1", gridRow: "span 1", backgroundColor: "#222", borderRadius: "32px", padding: "30px", border: "1px solid #333" }}>
+              <span style={{ fontSize: "40px", display: "block", marginBottom: "15px" }}>⚡</span>
+              <h3 style={{ fontSize: "1.4rem", margin: 0 }}>EV Fleet</h3>
+              <p style={{ opacity: 0.6, fontSize: "0.9rem" }}>Zero emission travel.</p>
+          </div>
+
+          {/* Pet Friendly Card */}
+          <div style={{ gridColumn: "span 1", gridRow: "span 1", backgroundColor: "#fff", color: "#000", borderRadius: "32px", padding: "30px" }}>
+              <span style={{ fontSize: "40px", display: "block", marginBottom: "15px" }}>🐕</span>
+              <h3 style={{ fontSize: "1.4rem", margin: 0 }}>Pet Friendly</h3>
+              <p style={{ opacity: 0.6, fontSize: "0.9rem" }}>Travel with your best friend.</p>
+          </div>
+        </div>
+      </section>
+
+      {/* 3. FLOATING AI CHATBOT UI */}
       <div style={{ position: "fixed", bottom: "30px", right: "30px", zIndex: 1000 }}>
         {!chatOpen ? (
           <button onClick={() => setChatOpen(true)} style={{ borderRadius: "50%", width: "65px", height: "65px", backgroundColor: "#007bff", color: "white", border: "none", fontSize: "30px", cursor: "pointer", boxShadow: "0 6px 15px rgba(0,0,0,0.3)", display: "flex", justifyContent: "center", alignItems: "center" }}>
@@ -214,13 +252,14 @@ const Dashboard = () => {
                 onChange={(e) => setChatInput(e.target.value)} 
                 onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
                 placeholder="Ask about car types..." 
-                style={{ flex: 1, border: "1px solid #ddd", borderRadius: "20px", padding: "8px 15px", outline: "none" }}
+                style={{ flex: 1, border: "1px solid #ddd", borderRadius: "20px", padding: "8px 15px", outline: "none", color: "#333" }}
               />
               <button onClick={handleSendMessage} style={{ backgroundColor: "#007bff", color: "white", border: "none", borderRadius: "50%", width: "35px", height: "35px", cursor: "pointer" }}>➤</button>
             </div>
           </div>
         )}
       </div>
+
     </div>
   );
 };

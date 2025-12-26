@@ -20,7 +20,7 @@ const Footer = () => {
 
         <div className="footer-col">
           <h5>Contact</h5>
-          <p>Email: support@gulfishar.example</p>
+          <p>Email: gulfisha9886@gmail.com</p>
           <p>Phone: +91 98765 43210</p>
         </div>
       </div>

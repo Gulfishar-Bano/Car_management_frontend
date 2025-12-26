@@ -2,7 +2,7 @@
   --primary: #15616D;     /* teal */
   --dark: #1F2A36;        /* deep slate */
   --muted: #1F2A36;       /* soft gray */
-  --bg: #E0F7FA;          /* clean light background */
+  --bg:white;          /* clean light background */
 }
 
 /* Header base */
