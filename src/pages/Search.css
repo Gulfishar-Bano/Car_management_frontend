@@ -1,171 +1,245 @@
-.search-container {
-  padding: 20px;
-  max-width: 900px;
-  margin: auto;
+/* Import a premium font */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
+
+.results-container {
+  background: #0f0f0f;
+  padding: 120px 8% 60px;
+  min-height: 100vh;
+  font-family: 'Inter', sans-serif;
 }
 
-.search-title {
-  text-align: center;
-  font-size: 28px;
-  margin-bottom: 20px;
+.results-container h2 {
+  color: #ffffff;
+  font-size: 32px;
+  font-weight: 800;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  margin-bottom: 50px;
+  border-left: 5px solid #007bff; /* Electric Blue accent */
+  padding-left: 20px;
 }
 
-.search-form {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 15px;
-  margin-bottom: 20px;
-  position: relative; /* Add this if suggestions are direct child */
-}
-
-.input-wrapper {
-  position: relative; /* Needed for autocomplete dropdown */
-  width: 100%;
-}
-
-.search-form input,
-.search-form select {
-  padding: 10px;
-  font-size: 16px;
-  border-radius: 6px;
-  border: 1px solid #ccc;
-  width: 100%;
-}
-
-.search-form button {
-  grid-column: span 3;
-  padding: 12px;
-  background: #0078ff;
-  color: white;
-  font-size: 18px;
-  border: none;
-  border-radius: 8px;
-  cursor: pointer;
-}
-
-.search-form button:hover {
-  background: #005fcc;
-}
-
-.no-results {
-  text-align: center;
-  margin-top: 40px;
-  color: #777;
-}
-
-/* Card Layout */
-.cards-container {
-  margin-top: 20px;
-}
-
-.card-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 20px;
-}
-
-/* Single Card Styling */
-.ride-card {
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+/* The Horizontal Stage Card */
+.ride-stage-card {
+  display: flex;
+  background: rgba(255, 255, 255, 0.03);
+  backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  margin-bottom: 40px;
+  height: 380px; /* Increased height for better visibility */
   overflow: hidden;
-  transition: transform 0.2s;
+  transition: all 0.4s ease;
 }
 
-.ride-card:hover {
+.ride-stage-card:hover {
+  border-color: #007bff;
   transform: translateY(-5px);
+  background: rgba(255, 255, 255, 0.05);
 }
 
-/* Car Image */
-.car-image {
+/* Image Visual Area */
+.stage-visual {
+  flex: 1.2;
+  position: relative;
+}
+
+.stage-image {
   width: 100%;
-  height: 160px;
+  height: 100%;
   object-fit: cover;
 }
 
-/* Card Content */
-.card-content {
-  padding: 15px;
+.stage-overlay {
+  position: absolute;
+  inset: 0;
+  /* Soft gradient to blend car into text area */
+  background: linear-gradient(90deg, transparent 60%, rgba(5, 5, 5, 1) 100%);
 }
 
-.card-content h4 {
-  font-size: 20px;
-  margin-bottom: 10px;
+/* Content Area - FIXED VISIBILITY */
+.stage-content {
+  flex: 1;
+  padding: 50px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  background: #0a0a0a; /* Solid dark background for text clarity */
 }
 
-.card-content p {
-  margin: 4px 0;
-  font-size: 14px;
+.brand-tag {
+  color: #007bff; /* Electric Blue */
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  margin-bottom: 12px;
 }
 
-/* Book Button */
-.book-button {
-  width: 100%;
-  margin-top: 10px;
-  padding: 10px;
-  background: #28a745;
-  color: white;
+.car-model-name {
+  color: #ffffff; /* Pure white for maximum visibility */
+  font-size: 42px;
+  font-weight: 800;
+  margin: 0 0 25px 0;
+  line-height: 1;
+}
+
+/* Specs Grid - Horizontal & Clear */
+.specs-grid {
+  display: flex;
+  gap: 35px;
+  margin-bottom: 40px;
+}
+
+.spec-item {
+  display: flex;
+  flex-direction: column;
+}
+
+.spec-label {
+  color: rgba(255, 255, 255, 0.5); /* Muted but readable */
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  margin-bottom: 6px;
+}
+
+.spec-value {
+  color: #ffffff; /* High contrast */
   font-size: 16px;
-  border: none;
+  font-weight: 600;
+}
+
+/* Footer & Button */
+.booking-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding-top: 30px;
+}
+
+.price-tag {
+  display: flex;
+  flex-direction: column;
+}
+
+.amount {
+  color: #ffffff;
+  font-size: 32px;
+  font-weight: 800;
+}
+
+.per-trip {
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 10px;
+  letter-spacing: 1px;
+}
+
+/* The High-End Button */
+.book-now-premium {
+  background: #ffffff; /* White button pops off the black background */
+  color: #000000;
+  padding: 16px 45px;
   border-radius: 8px;
+  font-weight: 800;
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  border: none;
   cursor: pointer;
+  transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.book-button:hover {
-  background: #1f7f36;
+.book-now-premium:hover {
+  background: #007bff;
+  color: #ffffff;
+  box-shadow: 0 10px 25px rgba(0, 123, 255, 0.4);
 }
 
-.suggestions-list {
-  border: 1px solid #ccc;
-  max-height: 150px;
-  overflow-y: auto;
-  background: white;
-  position: absolute;
-  z-index: 1000;
+/* Container for the car image */
+.stage-visual {
+  flex: 1.2;
+  position: relative;
+  background: #000; /* Keeps the background black if the image is smaller */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px; /* Gives the car some "breathing room" */
+  overflow: hidden;
+}
+
+/* Image scaling fix */
+.stage-image {
   width: 100%;
-  top: 100%; /* Place below input */
-  left: 0;
-  padding: 0;
-  margin: 0;
-  list-style: none;
+  height: 100%;
+  object-fit: contain; /* Changed from 'cover' to 'contain' to stop zooming */
+  transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  filter: drop-shadow(0 10px 20px rgba(0,0,0,0.5)); /* Adds depth to the car */
 }
 
-.suggestions-list li {
-  padding: 8px;
-  cursor: pointer;
+/* Hover effect: subtle lift rather than huge zoom */
+.ride-stage-card:hover .stage-image {
+  transform: scale(1.05); 
 }
 
-.suggestions-list li:hover {
-  background-color: #f0f0f0;
-}
-
-/* TEMPORARY DEBUGGING CSS - REMOVE LATER */
-.input-wrapper {
-  position: relative; 
-  /* TEMPORARILY REMOVE GRID COLUMN SPAN */
-  /* grid-column: span 1; */ 
-  z-index: 99999; /* Max Z-index */
-}
-.input-wrapper input {
-  position: relative; /* Ensure the input itself has high stacking context */
-  z-index: 100000; 
-}
-.ride-card {
-  position: relative; /* Essential for absolute positioning of the counter */
-}
-
-.viewer-count-badge {
+/* Updated Overlay for better blending */
+.stage-overlay {
   position: absolute;
-  bottom: 5px; /* Adjust to sit right above the button */
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 10;
-  white-space: nowrap;
-  background-color: #fff;
-  border: 1px solid #ff4d4f;
-  padding: 4px 10px;
-  border-radius: 12px;
-  font-size: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  inset: 0;
+  /* Creates a subtle fade into the text area without blocking the car */
+  background: linear-gradient(90deg, transparent 70%, rgba(10, 10, 10, 1) 100%);
+  pointer-events: none;
+}
+.stage-content {
+  flex: 1;
+  padding: 40px 60px 40px 20px; /* More padding on the right for elegance */
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  background: #0a0a0a;
+  z-index: 2; /* Ensures text stays above the overlay */
+}
+
+.live-viewer-wrapper {
+  position: absolute;
+  top: 20px;
+  left: 20px;
+  z-index: 99; /* Make it high! */
+  pointer-events: none;
+}
+
+/* If you can style the internal ViewerCounter component, use these styles */
+.viewer-count-badge {
+  background: rgba(0, 123, 255, 0.15); /* Subtle blue tint */
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(0, 123, 255, 0.5);
+  color: #007bff; /* Electric Blue */
+  padding: 6px 14px;
+  border-radius: 50px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 0 15px rgba(0, 123, 255, 0.2);
+}
+
+/* Adding a 'Blinking' Live Dot for that Real-Time feel */
+.viewer-count-badge::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  background: #007bff;
+  border-radius: 50%;
+  display: inline-block;
+  animation: pulse-live 1.5s infinite;
+}
+
+@keyframes pulse-live {
+  0% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.5); opacity: 0.5; }
+  100% { transform: scale(1); opacity: 1; }
 }

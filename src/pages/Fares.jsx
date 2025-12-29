@@ -11,3 +11,5 @@ const Fares = () => {
 };
 
 export default Fares;
+
+     

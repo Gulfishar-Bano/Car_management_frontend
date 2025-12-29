@@ -1,77 +1,155 @@
-.booking-container {
-  max-width: 500px;
-  margin: 40px auto;
-  padding: 30px;
-  background-color: #ffffff;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+/* Booking.css */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap');
+
+.premium-booking-page {
+  background: #050505;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 20px;
+  font-family: 'Inter', sans-serif;
 }
 
-.booking-container h2 {
-  text-align: center;
-  margin-bottom: 20px;
-  color: #333;
-}
-
-.ride-info {
-  background-color: #f9f9f9;
-  padding: 15px;
-  border-radius: 8px;
-  margin-bottom: 25px;
-  border: 1px solid #e0e0e0;
-}
-
-.ride-info p {
-  margin: 6px 0;
-  font-weight: 500;
-}
-
-.booking-container h3 {
-  margin-bottom: 15px;
-  color: #555;
-}
-
-.booking-container input {
+.booking-glass-container {
+  display: flex;
   width: 100%;
-  padding: 10px 12px;
-  margin-bottom: 15px;
-  border-radius: 8px;
-  border: 1px solid #ccc;
-  font-size: 14px;
-  transition: border-color 0.2s;
+  max-width: 1000px;
+  background: rgba(255, 255, 255, 0.02);
+  backdrop-filter: blur(25px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 30px;
+  overflow: hidden;
+  box-shadow: 0 50px 100px rgba(0,0,0,0.5);
 }
 
-.booking-container input:focus {
+/* Left Panel */
+.booking-summary-panel {
+  flex: 1;
+  background: linear-gradient(135deg, #0a0a0a 0%, #111 100%);
+  padding: 60px;
+  border-right: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.brand-badge {
+  color: #007bff;
+  font-size: 11px;
+  letter-spacing: 4px;
+  text-transform: uppercase;
+  font-weight: 800;
+  margin-bottom: 20px;
+}
+
+.booking-summary-panel h2 {
+  color: white;
+  font-size: 32px;
+  margin-bottom: 40px;
+  font-weight: 800;
+}
+
+.detail-item {
+  margin-bottom: 30px;
+}
+
+.detail-item span {
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.detail-item p {
+  color: white;
+  font-size: 18px;
+  font-weight: 600;
+  margin-top: 5px;
+}
+
+.total-row {
+  margin-top: 50px;
+  padding-top: 30px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.total-row span { color: #007bff; font-weight: 700; }
+.total-row p { color: white; font-size: 36px; font-weight: 800; }
+
+/* Right Panel */
+.booking-form-panel {
+  flex: 1.2;
+  padding: 60px;
+  background: #0d0d0d;
+}
+
+.booking-form-panel h3 {
+  color: white;
+  font-size: 24px;
+  margin-bottom: 10px;
+}
+
+.form-subtitle {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 14px;
+  margin-bottom: 40px;
+}
+
+.input-group {
+  margin-bottom: 25px;
+}
+
+.input-group label {
+  display: block;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 12px;
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+
+.input-group input {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 15px;
+  border-radius: 12px;
+  color: white;
+  font-size: 15px;
+  transition: 0.3s;
+}
+
+.input-group input:focus {
   outline: none;
   border-color: #007bff;
+  background: rgba(255, 255, 255, 0.08);
 }
 
-.booking-container button {
+.confirm-booking-btn {
   width: 100%;
-  padding: 12px;
-  background-color: #007bff;
-  color: white;
-  font-weight: bold;
-  font-size: 16px;
-  border: none;
-  border-radius: 8px;
+  background: #ffffff;
+  color: black;
+  padding: 18px;
+  border-radius: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1px;
   cursor: pointer;
-  transition: background-color 0.2s;
+  border: none;
+  margin-top: 20px;
+  transition: 0.3s;
 }
 
-.booking-container button:hover {
-  background-color: #0056b3;
+.confirm-booking-btn:hover:not(:disabled) {
+  background: #007bff;
+  color: white;
+  box-shadow: 0 10px 30px rgba(0, 123, 255, 0.4);
 }
 
-.booking-container button:disabled {
-  background-color: #999;
-  cursor: not-allowed;
-}
-
-.error-text {
+.error-pill {
+  background: rgba(255, 0, 0, 0.1);
+  color: #ff4d4d;
+  padding: 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  margin-bottom: 20px;
   text-align: center;
-  margin-top: 10px;
-  color: red;
-  font-weight: 500;
+  border: 1px solid rgba(255, 0, 0, 0.2);
 }

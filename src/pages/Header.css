@@ -5,15 +5,22 @@
   --bg:white;          /* clean light background */
 }
 
-/* Header base */
 .site-header {
-  width: 100%;
-  background: var(--bg);
-  border-bottom: 1px solid rgba(21, 97, 109, 0.12); /* subtle teal tint */
-  position: sticky;
-  top: 0;
-  z-index: 60;
-  box-shadow: 0 1px 4px rgba(16,24,40,0.05);
+  background: #ffffff;
+  /* Adds a tiny bit of depth so it floats nicely over the car images */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); 
+  border-bottom: 1px solid #eeeeee;
+  transition: all 0.3s ease;
+}
+
+.nav a {
+  color: #1a1a1a; /* Dark text for the white header */
+  font-weight: 600;
+}
+
+.user-greeting {
+  color: #555555;
+  border-left: 1px solid #dddddd;
 }
 
 .header-inner {

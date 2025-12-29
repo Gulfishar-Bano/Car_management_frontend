@@ -1,77 +1,219 @@
-/* Page background */
-.voucher-page {
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&family=JetBrains+Mono&display=swap');
+
+.voucher-page-wrapper {
+  background: #050505;
+  min-height: 100vh;
   display: flex;
-  justify-content: center;
-  padding: 40px;
-  background: #f5f7fa;
+  flex-direction: column;
+  align-items: center;
+  padding: 60px 20px;
+  font-family: 'Inter', sans-serif;
 }
 
-/* Button */
-.voucher-download-btn {
-  text-align: center;
-  margin-bottom: 20px;
-}
+.action-bar { margin-bottom: 40px; }
 
-.voucher-download-btn button {
-  background: #0066ff;
+.download-btn-premium {
+  background: #007bff;
   color: white;
-  padding: 10px 18px;
   border: none;
-  border-radius: 8px;
+  padding: 14px 30px;
+  border-radius: 50px;
+  font-weight: 800;
+  letter-spacing: 1px;
   cursor: pointer;
-  font-size: 16px;
+  box-shadow: 0 10px 20px rgba(0, 123, 255, 0.3);
+  transition: 0.3s;
 }
 
-.voucher-download-btn button:hover {
-  background: #0052d6;
+.download-btn-premium:hover { transform: translateY(-2px); background: #0056b3; }
+
+/* Ticket Styling */
+.ticket-container {
+  width: 100%;
+  max-width: 650px;
+  background: #111;
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: 0 40px 80px rgba(0,0,0,0.6);
+  border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
-/* Main container */
-.voucher-container {
-  width: 700px;
-  background: #ffffff;
-  border-radius: 12px;
-  padding: 30px;
-  box-shadow: 0px 4px 20px rgba(0,0,0,0.1);
+.ticket-header {
+  background: linear-gradient(90deg, #007bff, #00c2ff);
+  padding: 40px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: white;
 }
 
-/* Title */
-.voucher-container h2 {
-  text-align: center;
-  font-size: 26px;
-  margin-bottom: 25px;
-  color: #222;
+.premium-label { font-size: 10px; letter-spacing: 4px; font-weight: 800; opacity: 0.8; }
+.ticket-header h2 { font-size: 28px; margin-top: 5px; font-weight: 800; }
+
+.id-badge { text-align: right; }
+.id-badge span { font-size: 10px; font-weight: 800; opacity: 0.7; }
+.id-badge p { font-family: 'JetBrains Mono', monospace; font-size: 20px; font-weight: 600; }
+
+.ticket-body { padding: 40px; background: #111; }
+
+.route-display {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 40px;
+  padding-bottom: 30px;
+  border-bottom: 1px dashed rgba(255, 255, 255, 0.1);
 }
 
-/* Section wrapper */
-.voucher-section,
-.booking-id-section {
-  background: #f0f4ff;
-  border-left: 4px solid #0066ff;
-  padding: 16px 20px;
-  margin-bottom: 18px;
+.loc span { font-size: 10px; color: #007bff; font-weight: 800; letter-spacing: 1px; }
+.loc h3 { color: white; font-size: 22px; margin-top: 5px; }
+
+.connector { flex: 1; display: flex; align-items: center; justify-content: center; padding: 0 20px; }
+.line { height: 2px; background: rgba(255, 255, 255, 0.1); flex: 1; }
+.car-icon { margin: 0 15px; font-style: normal; }
+
+.info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 30px;
+}
+
+.info-col label { font-size: 10px; color: rgba(255, 255, 255, 0.4); font-weight: 800; display: block; margin-bottom: 5px; }
+.info-col p { color: white; font-weight: 600; font-size: 15px; }
+
+.status-pill {
+  color: #007bff !important;
+  text-transform: uppercase;
+}
+
+.ticket-footer {
+  background: #0a0a0a;
+  padding: 30px 40px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 2px dashed #050505; /* Creates ticket cutout effect */
+  position: relative;
+}
+
+/* Ticket Cutout Holes */
+.ticket-footer::before, .ticket-footer::after {
+  content: '';
+  position: absolute;
+  top: -15px;
+  width: 30px;
+  height: 30px;
+  background: #050505;
+  border-radius: 50%;
+}
+.ticket-footer::before { left: -15px; }
+.ticket-footer::after { right: -15px; }
+
+.dummy-qr {
+  width: 60px;
+  height: 60px;
+  background: white;
+  opacity: 0.1;
   border-radius: 8px;
 }
 
-.voucher-section h3,
-.booking-id-section h3 {
-  margin-top: 0;
-  margin-bottom: 10px;
-  color: #003f95;
-  font-size: 18px;
-}
-
-.voucher-section p,
-.booking-id-section p {
-  margin: 6px 0;
-  font-size: 15px;
-}
-
-/* Footer */
-.voucher-footer {
-  margin-top: 25px;
-  padding-top: 10px;
+.security-line {
+  background: #000;
+  color: rgba(255, 255, 255, 0.2);
+  font-size: 8px;
   text-align: center;
-  border-top: 1px solid #ccc;
-  color: #555;
+  padding: 10px;
+  letter-spacing: 1px;
+}
+
+/* Modern Journey Timeline */
+.journey-timeline {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 50px;
+  padding: 0 10px;
+}
+
+.timepoint { flex: 1; }
+
+.dot {
+  width: 12px;
+  height: 12px;
+  background: #007bff;
+  border-radius: 50%;
+  box-shadow: 0 0 15px rgba(0, 123, 255, 0.6);
+  margin-bottom: 15px;
+}
+
+.dot.destination { background: #ffffff; box-shadow: 0 0 15px rgba(255, 255, 255, 0.4); }
+
+.time-info span { font-size: 10px; color: rgba(255, 255, 255, 0.4); font-weight: 800; letter-spacing: 1px; }
+.time-info h3 { color: white; font-size: 18px; margin: 5px 0; }
+.time-info p { color: #007bff; font-family: 'JetBrains Mono', monospace; font-size: 13px; }
+
+.duration-connector {
+  flex: 1.5;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: 5px;
+}
+
+.dashed-line {
+  width: 100%;
+  height: 1px;
+  border-top: 2px dashed rgba(255, 255, 255, 0.1);
+  margin-bottom: 10px;
+}
+
+.trip-badge {
+  background: rgba(255, 255, 255, 0.05);
+  padding: 6px 12px;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.trip-badge span { color: white; font-size: 11px; font-weight: 700; }
+
+/* Premium Grid */
+.premium-specs-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+}
+
+.spec-card {
+  background: rgba(255, 255, 255, 0.02);
+  padding: 20px;
+  border-radius: 15px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.spec-card label { font-size: 9px; color: #007bff; font-weight: 900; letter-spacing: 1.5px; display: block; margin-bottom: 8px; }
+.spec-card p { color: white; font-size: 16px; font-weight: 700; }
+.spec-card small { color: rgba(255, 255, 255, 0.3); font-size: 11px; margin-top: 4px; display: block; }
+
+.status-highlight { color: #00ff88 !important; text-transform: uppercase; }
+
+/* Add this to your existing Voucher.css */
+.fare-highlight p {
+  color: #007bff; /* Electric Blue to match your theme */
+  font-size: 20px !important;
+  font-weight: 800;
+  text-shadow: 0 0 10px rgba(0, 123, 255, 0.3);
+}
+
+.fare-highlight label {
+  color: #ffffff !important;
+  opacity: 0.9;
+}
+
+.status-highlight {
+  color: #00ff88 !important; /* Green for success/active */
+  text-transform: uppercase;
+  letter-spacing: 1px;
 }
