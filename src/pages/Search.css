@@ -214,10 +214,10 @@
   background: rgba(0, 123, 255, 0.15); /* Subtle blue tint */
   backdrop-filter: blur(8px);
   border: 1px solid rgba(0, 123, 255, 0.5);
-  color: #007bff; /* Electric Blue */
+  color: #ff3300; /* Electric Blue */
   padding: 6px 14px;
   border-radius: 50px;
-  font-size: 11px;
+  font-size: 18px;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 1px;

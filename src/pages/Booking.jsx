@@ -34,7 +34,7 @@ const Booking = () => {
 
       const particleCount = 50 * (timeLeft / duration);
       
-      // Carisma Themed Colors: Electric Blue and White
+    
       confetti({ 
         ...defaults, 
         particleCount, 
@@ -87,7 +87,7 @@ const Booking = () => {
         // 🎊 Success! Fire celebration
         fireCelebration();
 
-        // ⏱️ Wait for 2 seconds for the user to enjoy the confetti before moving
+       
         setTimeout(() => {
           navigate(`/voucher/${bookingId}`, { state: { bookingId } });
         }, 2200);

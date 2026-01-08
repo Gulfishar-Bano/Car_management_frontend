@@ -92,11 +92,10 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-top: 2px dashed #050505; /* Creates ticket cutout effect */
+  border-top: 2px dashed #050505; 
   position: relative;
 }
 
-/* Ticket Cutout Holes */
 .ticket-footer::before, .ticket-footer::after {
   content: '';
   position: absolute;
@@ -126,7 +125,6 @@
   letter-spacing: 1px;
 }
 
-/* Modern Journey Timeline */
 .journey-timeline {
   display: flex;
   align-items: flex-start;
@@ -179,7 +177,7 @@
 
 .trip-badge span { color: white; font-size: 11px; font-weight: 700; }
 
-/* Premium Grid */
+
 .premium-specs-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -199,9 +197,8 @@
 
 .status-highlight { color: #00ff88 !important; text-transform: uppercase; }
 
-/* Add this to your existing Voucher.css */
 .fare-highlight p {
-  color: #007bff; /* Electric Blue to match your theme */
+  color: #007bff; 
   font-size: 20px !important;
   font-weight: 800;
   text-shadow: 0 0 10px rgba(0, 123, 255, 0.3);
@@ -213,7 +210,43 @@
 }
 
 .status-highlight {
-  color: #00ff88 !important; /* Green for success/active */
+  color: #00ff88 !important; 
   text-transform: uppercase;
   letter-spacing: 1px;
+}
+@keyframes pulse {
+  0% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.5); opacity: 0.5; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+/* Force the Leaflet SVG layer to stay locked to the map container */
+.leaflet-overlay-pane svg {
+    width: 100% !important;
+    height: 100% !important;
+    pointer-events: none;
+}
+
+/* Ensure the blue points don't move during the snapshot */
+.leaflet-pane {
+    z-index: 400 !important;
+}
+
+/* This stops the map from "sliding" when the PDF generator looks at it */
+.leaflet-zoom-animated, 
+.leaflet-marker-icon, 
+.leaflet-interactive {
+    transition: none !important;
+    animation: none !important;
+}
+
+/* Add this to Voucher.css */
+.voucher-map-container {
+    height: 350px !important; /* Force a specific height */
+    width: 100% !important;
+    position: relative;
+    border-radius: 15px;
+    overflow: hidden;
+    /* This helps html2canvas see the map layers correctly */
+    transform: translateZ(0);
 }

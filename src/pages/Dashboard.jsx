@@ -3,6 +3,7 @@ import { Swiper, SwiperSlide } from "swiper/react";
 import { Navigation, Pagination, Autoplay, EffectFade } from "swiper/modules";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import CarismaMap from "./CarismaMap";
 
 // Swiper Styles
 import "swiper/css";
@@ -30,6 +31,38 @@ const Dashboard = () => {
     { role: "ai", text: "Hello! I'm Carisma AI. Need help finding the perfect ride?" }
   ]);
 
+  // Replace your single 'coords' state with this:
+const [pickupCoords, setPickupCoords] = useState(null);
+const [dropoffCoords, setDropoffCoords] = useState(null);
+const [mapVisible, setMapVisible] = useState(false);
+
+const updateMapLocation = async (locationText, type) => {
+  if (!locationText) return;
+  
+  const regionalSearch = `${locationText}, Bangalore, Karnataka, India`;
+
+  try {
+    const response = await axios.get(`https://nominatim.openstreetmap.org/search`, {
+      params: { format: 'json', q: regionalSearch, limit: 1 }
+    });
+    
+    if (response.data.length > 0) {
+      const result = response.data[0];
+      // CRITICAL: Ensure these are numbers, not strings!
+      const newCoords = { 
+        lat: Number(result.lat), 
+        lng: Number(result.lon) 
+      };
+      
+      if (type === "from") setPickupCoords(newCoords);
+      else if (type === "to") setDropoffCoords(newCoords);
+      
+      setMapVisible(true);
+    }
+  } catch (error) {
+    console.error("Geocoding failed:", error);
+  }
+};
   // Fetch initial locations for autocomplete
   useEffect(() => {
     const fetchLocations = async () => {
@@ -46,28 +79,31 @@ const Dashboard = () => {
     fetchLocations();
   }, [BASE_URL]);
 
-  // --- Search Logic (Hits Backend) ---
   const handleSearch = async (e) => {
-    if (e) e.preventDefault();
-    if (!fromLoc || !toLoc) return alert("Please enter both locations");
+  if (e) e.preventDefault();
+  if (!fromLoc || !toLoc) return alert("Please enter both locations");
 
-    setLoading(true);
-    try {
-      const response = await axios.get(`${BASE_URL}/fare/route`, {
-        params: {
-          from: fromLoc,
-          to: toLoc,
-          // You can add date/ac here if you add inputs for them later
-        },
-      });
-      navigate("/search-results", { state: { results: response.data } });
-    } catch (error) {
-      console.error("Search API failed:", error);
-      alert("Search failed. Check console for details.");
-    } finally {
-      setLoading(false);
-    }
-  };
+  setLoading(true);
+  try {
+    const response = await axios.get(`${BASE_URL}/fare/route`, {
+      params: { from: fromLoc, to: toLoc },
+    });
+    // Pass coords and names so the map can render on the next page
+    navigate("/search-results", { 
+      state: { 
+        results: response.data,
+        pickup: pickupCoords,
+        dropoff: dropoffCoords,
+        fromName: fromLoc,
+        toName: toLoc
+      } 
+    });
+  } catch (error) {
+    console.error("Search API failed:", error);
+  } finally {
+    setLoading(false);
+  }
+};
 
   // --- Flip Logic ---
   const handleFlip = () => {
@@ -77,10 +113,16 @@ const Dashboard = () => {
   };
 
   const handleSelect = (value) => {
-    if (activeField === "from") setFrom(value);
-    if (activeField === "to") setTo(value);
-    setActiveField(null);
-  };
+  if (activeField === "from") {
+    setFrom(value);
+    updateMapLocation(value, "from"); // Added "from" as the second argument
+  }
+  if (activeField === "to") {
+    setTo(value);
+    updateMapLocation(value, "to");   // Added "to" as the second argument
+  }
+  setActiveField(null);
+};
 
   // --- Chatbot Logic ---
   const handleSendMessage = async () => {
@@ -173,6 +215,69 @@ const Dashboard = () => {
           </div>
         </div>
       </section>
+{/* 1.5 MAP PREVIEW SECTION */}
+{mapVisible && (
+  <section style={{ 
+    padding: "0 5%", 
+    maxWidth: "1100px", 
+    margin: "20px auto", 
+    zIndex: 20, 
+    position: "relative",
+    // This animation makes it feel smooth
+    animation: "fadeInSlide 0.6s cubic-bezier(0.16, 1, 0.3, 1)" 
+  }}>
+    <div style={{ 
+      background: "rgba(20, 20, 20, 0.8)", // Semi-transparent
+      backdropFilter: "blur(10px)",         // Blur effect
+      padding: "15px", 
+      borderRadius: "28px", 
+      border: "1px solid rgba(255, 255, 255, 0.1)", 
+      boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.5)"
+    }}>
+      {/* Header with a pulsating "Live" dot */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '15px', paddingLeft: '5px' }}>
+        <div style={{ 
+            width: '8px', height: '8px', backgroundColor: '#007bff', 
+            borderRadius: '50%', boxShadow: '0 0 8px #007bff' 
+        }}></div>
+        <h4 style={{ color: "#fff", fontSize: "11px", letterSpacing: '1.5px', margin: 0, fontWeight: '700' }}>
+            ROUTE PREVIEW
+        </h4>
+      </div>
+      
+      <div style={{ 
+          height: "350px", 
+          width: "100%", 
+          borderRadius: "20px", 
+          overflow: "hidden",
+          border: "1px solid rgba(255, 255, 255, 0.05)"
+      }}>
+        {/* Pass the actual coordinates here */}
+        <CarismaMap pickup={pickupCoords} dropoff={dropoffCoords} />
+      </div>
+
+      {/* Sleek Stats Footer */}
+      {pickupCoords && dropoffCoords && (
+        <div style={{ display: 'flex', gap: '20px', marginTop: '15px', padding: '0 5px' }}>
+             <div style={{ fontSize: '12px', color: '#888' }}>
+                <span style={{ color: '#007bff' }}>●</span> {fromLoc}
+             </div>
+             <div style={{ fontSize: '12px', color: '#888' }}>
+                <span style={{ color: '#28a745' }}>●</span> {toLoc}
+             </div>
+        </div>
+      )}
+    </div>
+
+    {/* CSS for the animation */}
+    <style>{`
+      @keyframes fadeInSlide {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+    `}</style>
+  </section>
+)}
  {/* 2. DESIGNED BENTO SERVICES SECTION */}
       <section style={{ padding: "100px 5%", maxWidth: "1400px", margin: "0 auto" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: "50px" }}>
