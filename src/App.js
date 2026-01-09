@@ -12,13 +12,16 @@ import Booking from "./pages/Booking";
 import Voucher from "./pages/Voucher";
 import About from "./pages/About";
 import Contact from "./pages/Contact";
+import BookingFlow from "./pages/BookingFlow";
+import MockPaymentGateway from "./pages/Payment";
+import PaymentPage from "./pages/PaymentPage";
 
 function App() {
   return (
     <Router>
       <Routes>
 
-        {/* Pages WITH layout (header + footer) */}
+        
         <Route
           path="/"
           element={
@@ -45,13 +48,17 @@ function App() {
             </Layout>
           }
         />
-
-        {/* Pages WITHOUT layout (full screen / no header) */}
+          <Route path="/checkout" element={<BookingFlow />} />
+      
+        
+   
+       
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
       <Route path="/About" element={<About/>}/>
       <Route path="/Contact" element={<Contact/>}/>
-        {/* Voucher usually needs NO header/footer */}
+      
+        <Route path="/payment" element={<PaymentPage />} />
         <Route path="/voucher/:bookingId" element={<Voucher />} />
 
       </Routes>

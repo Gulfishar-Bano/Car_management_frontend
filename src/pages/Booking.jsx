@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import { createBooking } from "../api/bookings";
 import "./Booking.css";
 import confetti from 'canvas-confetti';
+import MockPaymentGateway from "./Payment";
 
 const Booking = () => {
   const location = useLocation();
@@ -13,11 +14,14 @@ const Booking = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
+  const [isBookingCreated, setIsBookingCreated] = useState(false);
+  const [confirmedBookingId, setConfirmedBookingId] = useState(null);
+  const [finalAmount, setFinalAmount] = useState(0);
+
   const handleChange = (e) => {
     setUserDetails({ ...userDetails, [e.target.name]: e.target.value });
   };
 
-  // Function to fire the celebration
   const fireCelebration = () => {
     const duration = 3 * 1000;
     const animationEnd = Date.now() + duration;
@@ -27,14 +31,10 @@ const Booking = () => {
 
     const interval = setInterval(function() {
       const timeLeft = animationEnd - Date.now();
-
-      if (timeLeft <= 0) {
-        return clearInterval(interval);
-      }
+      if (timeLeft <= 0) return clearInterval(interval);
 
       const particleCount = 50 * (timeLeft / duration);
       
-    
       confetti({ 
         ...defaults, 
         particleCount, 
@@ -50,61 +50,50 @@ const Booking = () => {
     }, 250);
   };
 
-  const handleBooking = async () => {
-    setError("");
+ const handleBooking = async () => {
+  setError("");
+  
+  // 1. Validation logic (Keep your existing validation)
+  if (!userDetails.Name || !userDetails.Email || !userDetails.Date) {
+    setError("All fields are required.");
+    return;
+  }
 
-    // 1. Validation
-    if (!userDetails.Name || !userDetails.Email || !userDetails.Date) {
-      setError("All fields are required to reserve your ride.");
-      return;
-    }
-
-    const carId = ride.car?.id || ride.car?._id;
-    const fareId = ride.fareId || ride.id;
-
-    if (!carId || !fareId) {
-      setError("Selection error. Please restart the search.");
-      return;
-    }
-
-    // 2. Construct Payload
-    const payload = {
-      Name: userDetails.Name,
-      Email: userDetails.Email,
-      PickUpLocation: ride.FromLocation,
-      DropLocation: ride.ToLocation,
-      Date: userDetails.Date,
-      carId,
-      fareId,
-    };
-
-    try {
-      setLoading(true);
-      const response = await createBooking(payload);
-      const bookingId = response.id;
-
-      if (bookingId) {
-        // 🎊 Success! Fire celebration
-        fireCelebration();
-
-       
-        setTimeout(() => {
-          navigate(`/voucher/${bookingId}`, { state: { bookingId } });
-        }, 2200);
-      }
-    } catch (err) {
-      console.error("Booking Error:", err);
-      setError(err.response?.data?.message || "Booking failed. Please check your connection.");
-      setLoading(false); // Only stop loading if there is an error
-    }
-    // Note: setLoading(false) is not in finally because we want the button 
-    // to stay "Processing..." during the confetti animation.
+  const payload = {
+    Name: userDetails.Name,
+    Email: userDetails.Email,
+    PickUpLocation: ride.FromLocation,
+    DropLocation: ride.ToLocation,
+    Date: userDetails.Date,
+    carId: ride.car?.id || ride.car?._id,
+    fareId: ride.fareId || ride.id,
   };
+
+  try {
+    setLoading(true);
+    const response = await createBooking(payload);
+    
+    if (response.id) {
+      // REDIRECT TO NEW PAGE INSTEAD OF MODAL
+      navigate("/payment", { 
+        state: { 
+          bookingId: response.id, 
+          amount: ride.finalFare || ride.fare,
+          rideDetails: ride 
+        } 
+      });
+    }
+  } catch (err) {
+    setError("Booking failed. Please try again.");
+  } finally {
+    setLoading(false);
+  }
+};
 
   return (
     <div className="premium-booking-page">
       <div className="booking-glass-container">
-        {/* Left Side: Summary Card */}
+        
         <div className="booking-summary-panel">
           <div className="brand-badge">Carisma Luxury</div>
           <h2>Reservation Summary</h2>
@@ -132,7 +121,6 @@ const Booking = () => {
           </div>
         </div>
 
-        {/* Right Side: Form */}
         <div className="booking-form-panel">
           <h3>Personal Details</h3>
           <p className="form-subtitle">Complete your luxury booking below.</p>
@@ -165,14 +153,30 @@ const Booking = () => {
 
           {error && <div className="error-pill">{error}</div>}
 
+          {/* RESTORED BUTTON */}
           <button 
             className="confirm-booking-btn" 
             onClick={handleBooking} 
             disabled={loading}
           >
-            {loading ? "Processing Reservation..." : "Confirm Reservation"}
+            {loading ? "Processing..." : "Confirm Reservation"}
           </button>
         </div>
+
+        {/* Modal appears when isBookingCreated is true */}
+        {isBookingCreated && (
+          <MockPaymentGateway 
+            amount={finalAmount}
+            onCancel={() => setIsBookingCreated(false)}
+            onVerify={() => {
+               setIsBookingCreated(false);
+               fireCelebration();
+               setTimeout(() => {
+                 navigate(`/voucher/${confirmedBookingId}`);
+               }, 2500);
+            }}
+          />
+        )}
       </div>
     </div>
   );

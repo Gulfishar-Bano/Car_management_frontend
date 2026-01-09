@@ -153,3 +153,27 @@
   text-align: center;
   border: 1px solid rgba(255, 0, 0, 0.2);
 }
+
+/* Ensure the gateway covers everything */
+.gateway-overlay {
+  position: fixed; /* Takes it out of the normal flex flow */
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.9); /* Darken background like image_00311e.png */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999; /* Put it on top of everything */
+}
+
+.gateway-modal {
+  background: #1a1a1a; /* Match your dark theme */
+  padding: 40px;
+  border-radius: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  width: 100%;
+  max-width: 450px;
+  box-shadow: 0 10px 50px rgba(0,0,0,1);
+}

@@ -68,7 +68,7 @@ const CarismaMap = ({ pickup, dropoff }) => {
       <Marker position={[pickup.lat, pickup.lng]} />
       <Marker position={[dropoff.lat, dropoff.lng]} />
 
-      {/* 🚨 CUSTOM PANE (KEY FIX) */}
+    
       <Pane name="routePane" style={{ zIndex: 1000 }}>
         {/* Glow */}
         <Polyline
