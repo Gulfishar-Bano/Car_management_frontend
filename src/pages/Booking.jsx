@@ -50,15 +50,14 @@ const Booking = () => {
     }, 250);
   };
 
- const handleBooking = async () => {
+  const handleBooking = async () => {
   setError("");
-  
-  // 1. Validation logic (Keep your existing validation)
   if (!userDetails.Name || !userDetails.Email || !userDetails.Date) {
     setError("All fields are required.");
     return;
   }
 
+  
   const payload = {
     Name: userDetails.Name,
     Email: userDetails.Email,
@@ -72,17 +71,15 @@ const Booking = () => {
   try {
     setLoading(true);
     const response = await createBooking(payload);
+    const booking = response.data || response;   // support both formats
+
+if (booking.id) {
+  setConfirmedBookingId(booking.id);
+  setFinalAmount(ride.finalFare || ride.fare);
+  setIsBookingCreated(true);
+}
     
-    if (response.id) {
-      // REDIRECT TO NEW PAGE INSTEAD OF MODAL
-      navigate("/payment", { 
-        state: { 
-          bookingId: response.id, 
-          amount: ride.finalFare || ride.fare,
-          rideDetails: ride 
-        } 
-      });
-    }
+   
   } catch (err) {
     setError("Booking failed. Please try again.");
   } finally {
@@ -90,6 +87,7 @@ const Booking = () => {
   }
 };
 
+ 
   return (
     <div className="premium-booking-page">
       <div className="booking-glass-container">

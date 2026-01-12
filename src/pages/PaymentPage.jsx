@@ -22,7 +22,7 @@ const PaymentPage = () => {
       const verifyData = {
         razorpay_order_id: order.id,
         razorpay_payment_id: `pay_mock_${Math.random().toString(36).substring(7)}`,
-        razorpay_signature: "mock_sig_verification",
+        razorpay_signature: "mock_sig",
       };
 
       await axios.post(`${API_URL}/payment/verify`, verifyData);

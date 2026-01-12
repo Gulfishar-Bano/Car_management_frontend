@@ -51,7 +51,9 @@ const Header = () => {
           <Link to="/" onClick={() => setOpen(false)}>Home</Link>
           <Link to="/about" onClick={() => setOpen(false)}>About</Link>
           <Link to="/contact" onClick={() => setOpen(false)}>Contact</Link>
-          
+          <Link to="/my-bookings" style={{ color: '#007bff', fontWeight: 'bold' }}>
+    My Bookings
+  </Link>
 
           {/* Role-aware links */}
           {user && user.role === "ADMIN" && (

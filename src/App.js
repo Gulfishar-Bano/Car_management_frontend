@@ -3,7 +3,6 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 
 import Layout from "./pages/Layout";
 
-// Pages
 import Dashboard from "./pages/Dashboard";
 import SearchResults from "./pages/SearchResults";
 import Login from "./pages/Login";
@@ -15,9 +14,12 @@ import Contact from "./pages/Contact";
 import BookingFlow from "./pages/BookingFlow";
 import MockPaymentGateway from "./pages/Payment";
 import PaymentPage from "./pages/PaymentPage";
+import MyBookings from "./pages/MyBookings";
+import { AuthProvider } from "./components/AuthContext";
 
 function App() {
   return (
+    <AuthProvider>
     <Router>
       <Routes>
 
@@ -48,6 +50,15 @@ function App() {
             </Layout>
           }
         />
+
+        <Route
+          path="/my-bookings"
+          element={
+            <Layout>
+              <MyBookings />
+            </Layout>
+          }
+        />
           <Route path="/checkout" element={<BookingFlow />} />
       
         
@@ -62,7 +73,7 @@ function App() {
         <Route path="/voucher/:bookingId" element={<Voucher />} />
 
       </Routes>
-    </Router>
+    </Router></AuthProvider>
   );
 }
 

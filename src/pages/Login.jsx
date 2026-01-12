@@ -10,26 +10,27 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState("");
 
-  const handleLogin = async (e) => {
-    e.preventDefault();
+ const handleLogin = async (e) => {
+  e.preventDefault();
+  try {
+    const res = await axios.post(`${process.env.REACT_APP_BACKEND_URL}/jwt-auth/login`, {
+      email: email,    // Use lowercase 'email' to match your DTO
+      password: password, // Use lowercase 'password' to match your DTO
+    });
 
-    try {
-      const res = await axios.post(process.env.REACT_APP_BACKEND_URL+"/jwt-auth/login", {
-        email,
-        password,
-      });
+    // Check for token inside 'results' because of your SimpleInterceptor
+    const token = res.data.token || res.data.results?.token;
 
-    setMessage("Login successful!");
-localStorage.setItem("token", res.data.token);
-navigate("/");
-
-
-    } catch (error) {
-      setMessage(
-        error?.response?.data?.message || "Login failed. Try again."
-      );
+    if (token) {
+      localStorage.setItem("token", token);
+      // Save user info for the "My Bookings" page
+      localStorage.setItem("user", JSON.stringify({ Email: email })); 
+      navigate("/");
     }
-  };
+  } catch (error) {
+    setMessage(error?.response?.data?.message || "Invalid credentials");
+  }
+};
 
   return (
     <div style={styles.container}>

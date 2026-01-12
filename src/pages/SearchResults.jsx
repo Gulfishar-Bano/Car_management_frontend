@@ -3,10 +3,15 @@ import { useLocation, useNavigate } from "react-router-dom";
 import "./Search.css";
 import ViewerCounter from "../components/ViewerCounter";
 import CarismaMap from "../pages/CarismaMap"; 
+import { motion } from "framer-motion"; // Import Motion
 
 const RideCard = ({ item, BASE_URL, handleBook, isHovered }) => {
   return (
-    <div className={`ride-stage-card ${isHovered ? 'active' : ''}`}>
+    <motion.div 
+      // Add a hover lift effect for "Premium" feel
+      whileHover={{ y: -5, transition: { duration: 0.2 } }}
+      className={`ride-stage-card ${isHovered ? 'active' : ''}`}
+    >
       <div className="stage-visual">
         <img
           src={`${BASE_URL}${item.car?.imageUrl}`}
@@ -54,7 +59,7 @@ const RideCard = ({ item, BASE_URL, handleBook, isHovered }) => {
           </button>
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 };
 
@@ -63,8 +68,29 @@ const SearchResults = () => {
   const location = useLocation();
   const navigate = useNavigate();
   
-  const { results = [], pickup, dropoff, fromName, toName } = location.state || {};
+  // DESTINATION DATA (Change 'results' to 'response' if your backend uses that key)
+  const { results = [], response = [], pickup, dropoff, fromName, toName } = location.state || {};
+  const dataToMap = Array.isArray(results) && results.length > 0 ? results : response;
+  
   const BASE_URL = process.env.REACT_APP_BACKEND_URL;
+
+  // 1. ANIMATION VARIANTS
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: { staggerChildren: 0.15 } // Elements pop in one by one
+    }
+  };
+
+  const cardVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { 
+      opacity: 1, 
+      y: 0,
+      transition: { type: "spring", stiffness: 100 } 
+    }
+  };
 
   return (
     <div className="search-page-wrapper" style={{ display: "flex", backgroundColor: "#0a0a0a", minHeight: "100vh" }}>
@@ -78,15 +104,23 @@ const SearchResults = () => {
           </p>
         </div>
 
-        {results.length === 0 ? (
+        {dataToMap.length === 0 ? (
           <p style={{ color: "#fff" }}>No results found.</p>
         ) : (
-          <div className="card-grid" style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
-            {results.map((item, index) => {
+          <motion.div 
+            className="card-grid" 
+            style={{ display: "flex", flexDirection: "column", gap: "20px" }}
+            // 2. APPLY STAGGERED ANIMATION
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+          >
+            {dataToMap.map((item, index) => {
               const carId = item.car?.id || item.car?._id || index;
               return (
-                <div 
+                <motion.div 
                   key={carId}
+                  variants={cardVariants} // Individual card animation
                   onMouseEnter={() => setHoveredCarId(carId)}
                   onMouseLeave={() => setHoveredCarId(null)}
                 >
@@ -96,10 +130,10 @@ const SearchResults = () => {
                     handleBook={() => navigate("/booking", { state: { ride: item } })}
                     isHovered={hoveredCarId === carId}
                   />
-                </div>
+                </motion.div>
               );
             })}
-          </div>
+          </motion.div>
         )}
       </div>
 
@@ -112,69 +146,69 @@ const SearchResults = () => {
           padding: "20px", 
           display: "flex", 
           flexDirection: "column", 
-          overflowY: "auto", // Allows sidebar cards to scroll if needed
           borderLeft: "1px solid rgba(255,255,255,0.1)" 
       }}>
         
-        {/* MAP CONTAINER - Fixed Height back to original look */}
+        {/* MAP CONTAINER */}
         <div style={{ 
             height: "350px", 
             width: "100%", 
             borderRadius: "24px", 
             overflow: "hidden", 
-            flexShrink: 0, // Prevents map from squishing
-            boxShadow: "0 0 40px rgba(0,0,0,0.5)" 
+            flexShrink: 0, 
+            boxShadow: "0 0 40px rgba(0,0,0,0.5)",
+            background: "#111"
         }}>
-          <CarismaMap pickup={pickup} dropoff={dropoff} />
+          {/* 3. LEAFLET SAFETY GUARD */}
+          {pickup && dropoff ? (
+             <CarismaMap pickup={pickup} dropoff={dropoff} />
+          ) : (
+            <div style={{ color: "#444", display: "flex", justifyContent: "center", alignItems: "center", height: "100%" }}>
+                Map data loading...
+            </div>
+          )}
         </div>
 
         {/* TRIP INSIGHTS CARD */}
-        <div className="trip-insight-card" style={{ 
-            marginTop: "20px", 
-            padding: "20px", 
-            background: "#1a1a1a", 
-            borderRadius: "24px", 
-            border: "1px solid rgba(255,255,255,0.1)" 
-        }}>
+        <motion.div 
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 0.5 }}
+          className="trip-insight-card" 
+          style={{ 
+            marginTop: "20px", padding: "20px", background: "#1a1a1a", borderRadius: "24px", border: "1px solid rgba(255,255,255,0.1)" 
+          }}
+        >
           <h4 style={{ color: "#007bff", fontSize: "20px", marginBottom: "15px" }}>TRIP INSIGHTS</h4>
           <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "10px" }}>
             <span style={{ color: "rgba(255,255,255,0.6)" }}>Route</span>
             <span style={{ fontWeight: "600", color: "#007bff" }}>{fromName} to {toName}</span>
           </div>
-          <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "10px" }}>
-            <span style={{ color: "rgba(255,255,255,0.6)" }}>Date</span>
-            <span style={{ color: "#007bff" }}>{new Date().toLocaleDateString()}</span>
-          </div>
           <hr style={{ borderColor: "rgba(255,255,255,0.05)", margin: "15px 0" }} />
           <p style={{ fontSize: "16px", color: "#4caf50", margin: 0 }}>
             ✔ Free cancellation until 2 hours before pickup
           </p>
-        </div>
+        </motion.div>
 
         {/* SAFETY FEATURES CARD */}
-        <div className="safety-features-card" style={{ 
-            marginTop: "20px", 
-            padding: "20px", 
-            background: "#1a1a1a", 
-            borderRadius: "24px", 
-            border: "1px solid rgba(0, 123, 255, 0.2)",
-            boxShadow: "0 10px 30px rgba(0,0,0,0.3)"
-        }}>
+        <motion.div 
+          initial={{ opacity: 0, x: 20 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ delay: 0.7 }}
+          className="safety-features-card" 
+          style={{ 
+            marginTop: "20px", padding: "20px", background: "#1a1a1a", borderRadius: "24px", border: "1px solid rgba(0, 123, 255, 0.2)"
+          }}
+        >
           <h4 style={{ color: "#007bff", fontSize: "20px", letterSpacing: "1px", marginBottom: "15px" }}>
             CARISMA PROMISE
           </h4>
-          <ul style={{ listStyle: "none", padding: 0, margin: 0, fontSize: "18px", color: "rgba(255,255,255,0.8)" }}>
-            <li style={{ marginBottom: "16px", display: "flex", alignItems: "center", gap: "10px" }}>
-              🛡️ <span><strong>Verified Professional Drivers</strong></span>
-            </li>
-            <li style={{ marginBottom: "16px", display: "flex", alignItems: "center", gap: "10px" }}>
-              🧼 <span><strong>Deep Cleaned & Sanitized Cars</strong></span>
-            </li>
-            <li style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-              💳 <span><strong>Transparent Pricing</strong></span>
-            </li>
+          <ul style={{ listStyle: "none", padding: 0, margin: 0, fontSize: "16px", color: "rgba(255,255,255,0.8)" }}>
+            <li style={{ marginBottom: "12px" }}>🛡️ <strong>Verified Drivers</strong></li>
+            <li style={{ marginBottom: "12px" }}>🧼 <strong>Deep Cleaned Cars</strong></li>
+            <li>💳 <strong>Transparent Pricing</strong></li>
           </ul>
-        </div>
+        </motion.div>
       </div>
     </div>
   );
